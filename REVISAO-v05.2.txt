@@ -1,0 +1,28 @@
+PROSPECT v0.5.2 — REVISÃO DO PROJETO ENVIADO
+
+1. Configuração
+- .env criado e preenchido a partir da configuração funcional enviada no projeto.
+- .env.local removido para evitar prioridade/duplicidade entre arquivos de ambiente.
+- .env.example removido conforme solicitado.
+- .gitignore mantém .env protegido.
+
+2. Segurança / npm audit
+- Aplicado override para deepmerge-ts 8.0.2.
+- Motivo: versões < 8.0.0 possuem o advisory GHSA-ggr8-5vv4-36mx.
+- A dependência chega de forma transitiva pelo Prisma CLI / @prisma/config.
+- package-lock.json foi alinhado com a versão segura.
+
+3. Qualidade de código
+- TypeScript: verificação sem erros.
+- ESLint: verificação sem erros após ajustes pontuais.
+- Mantida a navegação direta do login que já funcionou no ambiente Windows do projeto.
+
+4. Interface
+- Sidebar recolhível preservada.
+- Dashboard premium preservado.
+- Imagem do topo que sobrepunha o texto permanece removida.
+- Explorar mantém scroll interno e carregamento em blocos de 10 resultados.
+
+5. Localização
+- Cidades: IBGE.
+- Bairros: índice IBGE sincronizado + fallbacks do projeto + digitação manual quando a cidade não possui camada oficial de bairros.

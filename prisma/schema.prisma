@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id              String                    @id @default(cuid())
+  document        String?                   @unique
+  name            String
+  legalName       String?
+  niche           String?
+  status          String?
+  sourceType      String                    @default("PUBLIC_REGISTRY")
+  sourceExternalId String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  location        CompanyLocation?
+  digitalPresence CompanyDigitalPresence?
+  sources         CompanySource[]
+  leads           Lead[]
+
+  @@index([name])
+  @@index([niche])
+  @@index([sourceExternalId])
+}
+
+model CompanyLocation {
+  id           String  @id @default(cuid())
+  companyId    String  @unique
+  country      String  @default("BR")
+  state        String?
+  city         String?
+  neighborhood String?
+  postalCode   String?
+  address      String?
+  latitude     Float?
+  longitude    Float?
+  company      Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([state, city])
+  @@index([city, neighborhood])
+}
+
+model CompanyDigitalPresence {
+  id             String   @id @default(cuid())
+  companyId      String   @unique
+  website        String?
+  instagram      String?
+  whatsapp       String?
+  phone          String?
+  email          String?
+  googleMapsUri  String?
+  opportunityScore Int?
+  lastCheckedAt  DateTime?
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityScore])
+}
+
+model CompanySource {
+  id         String   @id @default(cuid())
+  companyId  String
+  field      String
+  value      String?
+  source     String
+  externalId String?
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, field])
+}
+
+model Lead {
+  id           String   @id @default(cuid())
+  companyId    String
+  status       String   @default("NEW")
+  nextActionAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  notes        LeadNote[]
+  activities   LeadActivity[]
+
+  @@index([status])
+  @@index([nextActionAt])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  content   String
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  type      String
+  detail    String?
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+}

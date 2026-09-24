@@ -1,0 +1,54 @@
+.card { position: relative; overflow: hidden; background: linear-gradient(180deg, #fff 0%, #fdfdff 100%); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-xs); min-width: 0; }
+.card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 82% -18%, rgb(22 119 255 / .09), transparent 32%); }
+.trendCard { grid-column: span 8; padding: 24px; }
+.presenceCard { grid-column: span 4; padding: 24px; }
+.distributionCard { grid-column: span 4; padding: 24px; min-height: 330px; }
+.header { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.header h2 { margin: 5px 0 0; font-size: 14px; font-weight: 640; letter-spacing: -.015em; }
+.kicker { color: var(--text-muted); font-size: 9px; font-weight: 720; letter-spacing: .11em; text-transform: uppercase; }
+.headerMeta { color: var(--text-muted); font-size: 10px; }
+.livePill { min-height: 28px; display: inline-flex; align-items: center; gap: 7px; padding: 0 9px; border: 1px solid rgb(21 154 112 / .15); border-radius: 999px; background: var(--success-soft); color: var(--success); font-size: 9px; font-weight: 650; }
+.livePill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 5px rgb(21 154 112 / .08); }
+.trendSummary { position: relative; z-index: 2; margin-top: 24px; display: flex; align-items: baseline; gap: 10px; }
+.trendSummary > strong { font-size: 34px; font-weight: 560; letter-spacing: -.055em; }
+.trendSummary > span { color: var(--text-secondary); font-size: 10px; font-weight: 620; }
+.trendSummary small { margin-left: 5px; color: var(--text-muted); font-size: 9px; font-weight: 500; }
+.chartWrap { position: relative; z-index: 2; height: 235px; margin: 5px -3px 0; }
+.lineChart { width: 100%; height: 100%; overflow: visible; cursor: crosshair; }
+.gridLine { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 6; }
+.areaReal { fill: url(#analyticsFillReal); stroke: none; }
+.primaryLine { fill: none; stroke: var(--brand-500); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 5px 8px rgb(22 119 255 / .18)); }
+.secondaryLine { fill: none; stroke: var(--success); stroke-width: 1.7; vector-effect: non-scaling-stroke; stroke-dasharray: 5 6; opacity: .8; }
+.hoverLine { stroke: var(--brand-200); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.activeDot { fill: var(--surface); stroke: var(--brand-500); stroke-width: 3; vector-effect: non-scaling-stroke; filter: drop-shadow(0 3px 6px rgb(22 119 255 / .24)); }
+.tooltip { position: absolute; z-index: 5; min-width: 150px; transform: translate(-50%, -100%); padding: 10px 11px; border: 1px solid var(--border); border-radius: 12px; background: rgb(255 255 255 / .96); box-shadow: var(--shadow-sm); pointer-events: none; backdrop-filter: blur(10px); }
+.tooltip span, .tooltip small { display: block; color: var(--text-muted); font-size: 8px; }
+.tooltip strong { display: block; margin: 4px 0 3px; font-size: 10px; font-weight: 650; }
+.legend { position: relative; z-index: 2; display: flex; gap: 18px; margin-top: 5px; color: var(--text-muted); font-size: 9px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }.legend i { width: 20px; height: 2px; border-radius: 999px; }
+.legendPrimary { background: var(--brand-500); }.legendSecondary { background: var(--success); }
+.orbitArea { position: relative; z-index: 2; min-height: 305px; display: grid; place-items: center; align-content: center; gap: 16px; padding-top: 12px; }
+.orbitChart { position: relative; width: 180px; height: 180px; filter: drop-shadow(0 18px 30px rgb(22 119 255 / .08)); }
+.orbitChart svg { width: 100%; height: 100%; }
+.orbitTrack { fill: none; stroke: var(--surface-soft); stroke-width: 8; }
+.orbitProgress { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray var(--motion-slow); }
+.orbit0 { stroke: var(--brand-500); }.orbit1 { stroke: var(--brand-300); }.orbit2 { stroke: var(--success); }
+.orbitCenter { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; pointer-events: none; }
+.orbitCenter strong { font-size: 30px; font-weight: 570; letter-spacing: -.05em; }.orbitCenter span { margin-top: 2px; color: var(--text-muted); font-size: 9px; }
+.orbitLegend { width: 100%; display: grid; gap: 5px; }
+.orbitLegend > div { min-height: 32px; display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 8px; padding: 0 8px; border-radius: 9px; color: var(--text-secondary); font-size: 9px; }
+.orbitLegend > div:hover { background: var(--surface-soft); }
+.orbitLegend i { width: 7px; height: 7px; border-radius: 50%; }.dot0 { background: var(--brand-500); }.dot1 { background: var(--brand-300); }.dot2 { background: var(--success); }
+.orbitLegend strong { color: var(--text-primary); font-size: 9px; }
+.distributionGrid { position: relative; z-index: 2; min-height: 255px; display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 16px; padding: 28px 4px 0; }
+.distributionItem { height: 210px; display: grid; grid-template-rows: 1fr auto auto; gap: 7px; text-align: center; }
+.distributionBar { position: relative; align-self: stretch; display: flex; align-items: flex-end; justify-content: center; border-radius: 18px; background: linear-gradient(180deg, transparent, var(--surface-soft)); overflow: hidden; }
+.distributionBar i { width: min(38px, 68%); min-height: 8%; border-radius: 12px 12px 5px 5px; background: linear-gradient(180deg, var(--brand-400), var(--brand-600)); box-shadow: 0 10px 24px rgb(22 119 255 / .18); transition: height var(--motion-slow); }
+.distributionBar i[data-index="1"] { opacity: .86; }.distributionBar i[data-index="2"] { opacity: .68; }.distributionBar i[data-index="3"] { opacity: .46; }
+.distributionItem > strong { font-size: 14px; font-weight: 620; }.distributionItem > span { color: var(--text-muted); font-size: 8px; }
+.emptyChart { position: relative; z-index: 2; min-height: 250px; display: grid; place-items: center; align-content: center; gap: 12px; text-align: center; color: var(--text-muted); }
+.emptyChart p { max-width: 260px; margin: 0; font-size: 10px; line-height: 1.6; }
+.emptyPulse { width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, var(--brand-200) 0 17%, transparent 19%), radial-gradient(circle, var(--brand-100) 0 45%, transparent 47%); animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform: scale(.94); opacity: .65; } 50% { transform: scale(1.06); opacity: 1; } }
+@media (max-width: 1180px) { .trendCard, .presenceCard, .distributionCard { grid-column: span 12; } }
+@media (max-width: 760px) { .trendCard, .presenceCard, .distributionCard { padding: 18px; }.chartWrap { height: 215px; }.tooltip { min-width: 128px; }.distributionGrid { gap: 9px; }.distributionBar i { width: 28px; } }

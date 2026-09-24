@@ -1,0 +1,27 @@
+PROSPECT v0.5.2 — PROJETO COMPLETO REVISADO
+
+O arquivo .env já está preenchido nesta entrega.
+Não é necessário criar .env.local nem copiar .env.example.
+
+1. No PowerShell, dentro da pasta do projeto:
+
+npm install
+npm run dev
+
+2. Abra:
+http://localhost:3000
+
+BANCO LOCAL (quando necessário):
+docker compose up -d postgres
+
+SINCRONIZAR BAIRROS MANUALMENTE (se necessário):
+npm run locations:sync
+
+VERIFICAÇÃO DE SEGURANÇA:
+npm audit
+npm audit --omit=dev
+
+IMPORTANTE:
+- O .env contém credenciais reais e está no .gitignore.
+- Não publique o .env nem este ZIP em repositórios públicos.
+- O Dashboard usa dados reais das buscas do Prospect; não foram inseridas empresas fictícias.

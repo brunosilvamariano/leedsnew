@@ -1,0 +1,28 @@
+export type Company = {
+  id: string;
+  initials: string;
+  name: string;
+  legalName: string;
+  document: string;
+  niche: string;
+  city: string;
+  state: string;
+  neighborhood: string;
+  address: string;
+  website?: string;
+  instagram?: string;
+  whatsapp?: string;
+  phone?: string;
+  email?: string;
+  score: number;
+  status: "Alto potencial" | "Bom potencial" | "Médio";
+  updatedAt: string;
+  source: string;
+  reasons: string[];
+  latitude?: number;
+  longitude?: number;
+  rating?: number;
+  reviewCount?: number;
+  placeId?: string;
+  googleMapsUrl?: string;
+};
