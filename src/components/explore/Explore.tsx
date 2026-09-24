@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Company } from "@/data/companies";
 import { Icon } from "@/components/ui/Icon";
+import { LocationCombobox, type LocationOption } from "./LocationCombobox";
 import {
   addLeadCompany,
   readLastSearch,
@@ -299,6 +300,43 @@ export function Explore() {
   const limitReached = searchMeta?.resultCount === searchMeta?.maxPerQuery;
   const cityDisabled = !countryCode || regionsLoading || (regions.length > 0 && !regionCode) || citiesLoading;
 
+  const countryLocationOptions = useMemo<LocationOption[]>(
+    () => countries.map((item) => ({
+      value: item.code,
+      label: item.name,
+      badge: item.code,
+    })),
+    [countries],
+  );
+
+  const regionLocationOptions = useMemo<LocationOption[]>(
+    () => [
+      {
+        value: "",
+        label: regions.length === 0 ? "Sem subdivisão obrigatória" : "Todas as regiões",
+      },
+      ...regions.map((item) => ({
+        value: item.code,
+        label: item.name,
+      })),
+    ],
+    [regions],
+  );
+
+  const cityLocationOptions = useMemo<LocationOption[]>(
+    () => [
+      {
+        value: "",
+        label: regions.length > 0 && !regionCode ? "Escolha uma região" : "Todas as cidades",
+      },
+      ...cities.map((item) => ({
+        value: item.name,
+        label: item.name,
+      })),
+    ],
+    [cities, regionCode, regions.length],
+  );
+
   return (
     <section className={styles.page}>
       <div className={styles.hero}>
@@ -320,26 +358,36 @@ export function Explore() {
         </div>
 
         <div className={styles.locationGrid}>
-          <label className={styles.field}>
-            <span>País</span>
-            <select value={countryCode} onChange={(event) => handleCountryChange(event.target.value)} disabled={countriesLoading}>
-              {countries.map((item) => <option key={item.code} value={item.code}>{item.flag ? `${item.flag} ` : ""}{item.name}</option>)}
-            </select>
-          </label>
-          <label className={styles.field}>
-            <span>Região / Estado</span>
-            <select value={regionCode} onChange={(event) => handleRegionChange(event.target.value)} disabled={!countryCode || regionsLoading || regions.length === 0}>
-              <option value="">{regionsLoading ? "Carregando regiões..." : regions.length === 0 ? "Sem subdivisão obrigatória" : "Todas as regiões"}</option>
-              {regions.map((item) => <option key={`${item.code}:${item.name}`} value={item.code}>{item.name}{item.type ? ` · ${item.type}` : ""}</option>)}
-            </select>
-          </label>
-          <label className={styles.field}>
-            <span>Cidade</span>
-            <select value={city} onChange={(event) => handleCityChange(event.target.value)} disabled={cityDisabled}>
-              <option value="">{citiesLoading ? "Carregando cidades..." : regions.length > 0 && !regionCode ? "Escolha uma região" : "Todas as cidades"}</option>
-              {cities.map((item) => <option key={String(item.id)} value={item.name}>{item.name}</option>)}
-            </select>
-          </label>
+          <LocationCombobox
+            label="País"
+            value={countryCode}
+            options={countryLocationOptions}
+            onChange={handleCountryChange}
+            placeholder="Escolha um país"
+            searchPlaceholder="Digite o nome do país..."
+            disabled={countriesLoading}
+            loading={countriesLoading}
+          />
+          <LocationCombobox
+            label="Região / Estado"
+            value={regionCode}
+            options={regionLocationOptions}
+            onChange={handleRegionChange}
+            placeholder="Todas as regiões"
+            searchPlaceholder="Digite o estado ou região..."
+            disabled={!countryCode || regionsLoading || regions.length === 0}
+            loading={regionsLoading}
+          />
+          <LocationCombobox
+            label="Cidade"
+            value={city}
+            options={cityLocationOptions}
+            onChange={handleCityChange}
+            placeholder="Todas as cidades"
+            searchPlaceholder="Digite o nome da cidade..."
+            disabled={cityDisabled}
+            loading={citiesLoading}
+          />
         </div>
 
         <div className={styles.quickRow}>
