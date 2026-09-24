@@ -76,11 +76,7 @@ export function LocationCombobox({
   }, []);
 
   useEffect(() => {
-    if (!open) {
-      setSearch("");
-      return;
-    }
-    window.requestAnimationFrame(() => inputRef.current?.focus());
+    if (open) window.requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
 
   function choose(option: LocationOption) {
