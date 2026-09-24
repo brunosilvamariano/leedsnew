@@ -87,12 +87,11 @@ function readableType(place: GooglePlace, fallback: string) {
   return type.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function matchesRequestedLocation(place: GooglePlace, countryCode?: string, region?: string, city?: string) {
+function matchesRequestedCountry(place: GooglePlace, countryCode?: string) {
+  if (!countryCode) return true;
   const actual = placeLocation(place);
-  if (countryCode && actual.countryCode && normalize(actual.countryCode) !== normalize(countryCode)) return false;
-  if (region && actual.state !== "—" && ![actual.state, actual.stateCode].some((value) => normalize(value) === normalize(region))) return false;
-  if (city && actual.city !== "—" && normalize(actual.city) !== normalize(city)) return false;
-  return true;
+  if (!actual.countryCode) return true;
+  return normalize(actual.countryCode) === normalize(countryCode);
 }
 
 async function requestPage(apiKey: string, body: Record<string, unknown>): Promise<GoogleTextSearchResponse> {
@@ -168,7 +167,11 @@ export async function searchGooglePlaces({
     const payload = await requestPage(apiKey, { ...commonBody, ...(nextPageToken ? { pageToken: nextPageToken } : {}) });
     pagesFetched += 1;
     for (const place of payload.places ?? []) {
-      if (!matchesRequestedLocation(place, countryCode, region, city)) continue;
+      // Text Search already receives city, region and country in the query.
+      // Administrative labels vary between Google and worldwide datasets
+      // (translations, abbreviations and administrative levels), so filtering
+      // them again here could incorrectly discard valid results.
+      if (!matchesRequestedCountry(place, countryCode)) continue;
       if (place.id && allPlaces.some((item) => item.id === place.id)) continue;
       allPlaces.push(place);
       if (allPlaces.length >= target) break;
