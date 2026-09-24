@@ -32,10 +32,6 @@ type GoogleTextSearchResponse = {
   nextPageToken?: string;
 };
 
-function normalize(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] ?? "E") + (parts[1]?.[0] ?? parts[0]?.[1] ?? "M")).toUpperCase();
@@ -85,13 +81,6 @@ function readableType(place: GooglePlace, fallback: string) {
   if (!place.types?.length) return fallback || "Empresa local";
   const type = place.types.find((item) => item !== "establishment" && item !== "point_of_interest") ?? place.types[0];
   return type.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function matchesRequestedCountry(place: GooglePlace, countryCode?: string) {
-  if (!countryCode) return true;
-  const actual = placeLocation(place);
-  if (!actual.countryCode) return true;
-  return normalize(actual.countryCode) === normalize(countryCode);
 }
 
 async function requestPage(apiKey: string, body: Record<string, unknown>): Promise<GoogleTextSearchResponse> {
@@ -167,11 +156,10 @@ export async function searchGooglePlaces({
     const payload = await requestPage(apiKey, { ...commonBody, ...(nextPageToken ? { pageToken: nextPageToken } : {}) });
     pagesFetched += 1;
     for (const place of payload.places ?? []) {
-      // Text Search already receives city, region and country in the query.
-      // Administrative labels vary between Google and worldwide datasets
-      // (translations, abbreviations and administrative levels), so filtering
-      // them again here could incorrectly discard valid results.
-      if (!matchesRequestedCountry(place, countryCode)) continue;
+      // Google Text Search already receives the requested city, region and
+      // country as part of textQuery, plus regionCode as a regional hint.
+      // Do not post-filter address labels here: translations and administrative
+      // levels differ across countries and can incorrectly remove valid places.
       if (place.id && allPlaces.some((item) => item.id === place.id)) continue;
       allPlaces.push(place);
       if (allPlaces.length >= target) break;
