@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import styles from "./AppShell.module.css";
 
@@ -19,8 +19,17 @@ const nav: { href: string; label: string; icon: IconName }[] = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (window.localStorage.getItem("prospect.session") !== "active") {
+      router.replace("/login");
+    }
+  }, [router]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -33,6 +42,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, []);
+
+  const logout = () => {
+    window.localStorage.removeItem("prospect.session");
+    router.replace("/login");
+  };
 
   const mobileItems = useMemo(() => nav.slice(0, 4), []);
 
@@ -66,7 +90,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className={styles.proCard}>
           <div className={styles.proIcon}><Icon name="crown"/></div>
           <strong>Encontre mais oportunidades.</strong>
-          <p>Use a busca nacional, filtros e dados reais para acelerar sua prospecção.</p>
+          <p>Use a busca global, filtros e dados reais para acelerar sua prospecção.</p>
           <Link href="/explorar">Explorar agora <Icon name="arrowUpRight"/></Link>
           <Image src="/brand/ice-mountain.svg" alt="" width={720} height={260} aria-hidden="true"/>
         </div>
@@ -81,11 +105,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
           <div className={styles.headerActions}>
             <button className={styles.notification} aria-label="Notificações"><Icon name="bell"/><i/></button>
-            <button className={styles.userMenu} aria-label="Abrir perfil">
-              <span className={styles.avatar}>BM</span>
-              <span className={styles.userText}><strong>Bruno</strong><small>Prospect</small></span>
-              <Icon name="chevronRight" className={styles.userChevron}/>
-            </button>
+            <div className={styles.userMenuWrap} ref={userMenuRef}>
+              <button
+                className={styles.userMenu}
+                aria-label="Abrir menu do usuário"
+                aria-expanded={userOpen}
+                onClick={() => setUserOpen((current) => !current)}
+              >
+                <span className={styles.avatar}>BM</span>
+                <span className={styles.userText}><strong>Bruno</strong><small>Prospect</small></span>
+                <Icon name="chevronRight" className={`${styles.userChevron} ${userOpen ? styles.userChevronOpen : ""}`}/>
+              </button>
+              {userOpen && (
+                <div className={styles.userDropdown}>
+                  <div className={styles.userDropdownHeader}>
+                    <span className={styles.avatar}>BM</span>
+                    <div><strong>Bruno</strong><small>Conta Prospect</small></div>
+                  </div>
+                  <Link href="/configuracoes" className={styles.userDropdownItem} onClick={() => setUserOpen(false)}>
+                    <span><Icon name="settings"/></span>
+                    <div><strong>Configurações</strong><small>Conta e preferências</small></div>
+                    <Icon name="chevronRight"/>
+                  </Link>
+                  <button type="button" className={`${styles.userDropdownItem} ${styles.logoutItem}`} onClick={logout}>
+                    <span><Icon name="logout"/></span>
+                    <div><strong>Sair</strong><small>Encerrar esta sessão</small></div>
+                    <Icon name="chevronRight"/>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <div className={styles.content}>{children}</div>

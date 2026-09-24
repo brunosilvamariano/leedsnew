@@ -1,22 +1,43 @@
-# Prospect v0.5.2 — Premium + revisão técnica
+# Prospect v0.6.1 — Busca Global Simplificada
 
-Esta versão é baseada no projeto completo enviado pelo usuário e mantém a direção visual aprovada: azul premium, cinza fosco, superfícies em gelo, ícones com acentos de cor e Dashboard Bento com dados reais.
+O Prospect pesquisa possíveis clientes em escala mundial. A interface continua em português e a localização agora segue um fluxo simples e consistente:
 
-## Revisões desta entrega
+**País → Região/Estado → Cidade → Nicho**
 
-- Projeto revisado sem recriar a base do zero.
-- `.env` incluído e já preenchido com a configuração recebida no projeto.
-- `.env.example` e `.env.local` removidos para evitar duplicidade de configuração.
-- `.env` continua protegido pelo `.gitignore` e não deve ser enviado ao GitHub.
-- Workaround de segurança adicionado em `package.json` para `deepmerge-ts@8.0.2`, corrigindo o alerta transitivo vindo de `prisma -> @prisma/config -> deepmerge-ts`.
-- `package-lock.json` alinhado com a versão segura de `deepmerge-ts`.
-- TypeScript e ESLint revisados; os arquivos do projeto passam nas verificações estáticas realizadas nesta revisão.
-- Sidebar recolhível preservada.
-- Ilustração que sobrepunha o bloco de data/frase do Dashboard permanece removida.
-- Busca real do Google Places preservada.
-- Cidades continuam vindo do IBGE.
-- Bairros usam o índice sincronizado do IBGE e fallbacks já existentes no projeto; quando uma cidade não possui bairros oficiais na malha do IBGE, o campo continua aceitando digitação manual.
-- Resultados do Explorar permanecem em uma área com scroll próprio, mostrando 10 empresas por vez.
+## O que mudou nesta versão
+
+- Removido o filtro de bairro/distrito do Explorar.
+- Busca global agora usa apenas país, região/estado e cidade.
+- A consulta ao Google Places não envia mais bairro como filtro.
+- Países, subdivisões e cidades continuam carregados sob demanda pela base mundial **World Countries Cities DB**.
+- Resultados continuam preservando o endereço público retornado pelo Google Places, inclusive bairro/sublocalidade quando a própria empresa tiver essa informação. Isso aparece apenas como detalhe do endereço, não como filtro.
+- Busca real continua limitada a até 60 resultados por consulta do Google Places, exibidos 10 por vez na área de scroll.
+- Dashboard, Radar, Leads e Favoritos continuam usando dados reais da última consulta e dos leads salvos.
+- `.env` segue incluído e preenchido conforme solicitado; `.env.example` permanece removido.
+- `deepmerge-ts` permanece fixado em `8.0.2` por `overrides`.
+
+## Fontes geográficas
+
+### Países, regiões e cidades
+
+O Prospect usa a base pública `srestre/world-countries-cities-db`, com países/territórios, subdivisões e cidades/localidades em escala mundial.
+
+A aplicação carrega somente o recorte necessário para o país/região escolhido, evitando colocar uma base mundial inteira no navegador.
+
+## Empresas
+
+As empresas são consultadas ao vivo pelo **Google Places (New)**. Não são inseridas empresas fictícias para preencher a interface.
+
+O enriquecimento atual tenta identificar, quando publicamente disponível:
+
+- Website
+- Instagram
+- WhatsApp
+- Telefone
+- E-mail
+- Avaliação e quantidade de reviews
+- Coordenadas
+- Google Maps
 
 ## Executar
 
@@ -35,54 +56,17 @@ http://localhost:3000
 
 ## Banco local
 
-O `.env` está alinhado ao `docker-compose.yml` incluído no projeto. Para subir o PostgreSQL local:
-
 ```powershell
 docker compose up -d postgres
 ```
 
-Depois, quando for necessário trabalhar com o schema:
+Quando necessário:
 
 ```powershell
 npm run db:generate
 npm run db:migrate -- --name init
 ```
 
-## Bairros
-
-O `postinstall` executa automaticamente:
-
-```powershell
-npm run locations:sync
-```
-
-Para forçar uma nova sincronização manual:
-
-```powershell
-npm run locations:sync
-```
-
-O índice oficial do IBGE não possui bairros formais para todos os municípios brasileiros. Por isso o Prospect mantém fallbacks e permite digitar o bairro diretamente quando necessário.
-
 ## Segurança
 
-O arquivo `.env` desta entrega contém credenciais reais e deve ser tratado como privado. Ele está ignorado pelo Git, mas não publique este ZIP em repositórios públicos.
-
-A correção para o alerta atual do `npm audit` foi aplicada por `overrides` em `package.json`:
-
-```json
-"overrides": {
-  "deepmerge-ts": "8.0.2"
-}
-```
-
-Após `npm install`, confirme no seu Windows:
-
-```powershell
-npm audit
-npm audit --omit=dev
-```
-
-## Dados do Dashboard
-
-O Dashboard não usa empresas fictícias. Ele lê a última consulta real, histórico real de buscas e leads/favoritos persistidos pelo Prospect no navegador. Métricas sem eventos reais permanecem em zero ou em estado vazio.
+O `.env` desta entrega contém credenciais reais e está no `.gitignore`. Não publique o `.env` nem este ZIP em repositórios públicos.

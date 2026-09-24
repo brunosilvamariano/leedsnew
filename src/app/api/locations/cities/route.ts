@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getWorldCities } from "@/lib/world-geography";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  const state = request.nextUrl.searchParams.get("state")?.toUpperCase().trim();
-  if (!state || state.length !== 2) return NextResponse.json({ ok: true, cities: [] });
+  const country = request.nextUrl.searchParams.get("country")?.toUpperCase().trim();
+  const region = request.nextUrl.searchParams.get("region")?.trim() || request.nextUrl.searchParams.get("state")?.trim() || undefined;
+
+  if (!country) {
+    return NextResponse.json({ ok: true, cities: [] });
+  }
 
   try {
-    const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(state)}/municipios?orderBy=nome`, {
-      next: { revalidate: 86400 },
-    });
-    if (!response.ok) throw new Error(`IBGE_${response.status}`);
-    const payload = await response.json() as Array<{ id: number; nome: string }>;
-    return NextResponse.json({ ok: true, cities: payload.map((item) => ({ id: item.id, name: item.nome })) });
+    const cities = await getWorldCities(country, region);
+    return NextResponse.json({ ok: true, cities, source: "World Countries Cities DB (ODbL)" });
   } catch (error) {
-    console.error("IBGE city lookup failed", error);
-    return NextResponse.json({ ok: false, cities: [], message: "Não foi possível carregar as cidades do IBGE agora." }, { status: 502 });
+    console.error("World city lookup failed", error);
+    return NextResponse.json({ ok: false, cities: [], message: "Não foi possível carregar as cidades desta região agora." }, { status: 502 });
   }
 }

@@ -1,0 +1,11 @@
+PROSPECT v0.6.1
+
+ALTERAÇÕES
+- Removido o filtro Bairro / Distrito do Explorar.
+- Fluxo global simplificado para País → Região/Estado → Cidade.
+- Removida a consulta de bairros da interface e da API de busca de empresas.
+- Removido o sincronizador de bairros do postinstall.
+- Removida a dependência fflate, que era usada apenas no sincronizador de bairros.
+- Grid de localização ajustado de 4 para 3 colunas.
+- Mantido o bairro/sublocalidade apenas como dado informativo retornado pelo Google Places no endereço da empresa.
+- package.json e package-lock.json atualizados para v0.6.1.

@@ -162,6 +162,6 @@ export function LiveRadar({ companies }: { companies: Company[] }) {
       <span>Maior score</span><strong>{strongest?.score ?? 0}</strong><small>{strongest?.name ?? "—"}</small>
     </div>}
     {!positioned.length && <div className={styles.empty}><span>RADAR</span><strong>Sem coordenadas ainda</strong><p>Faça uma busca real para projetar as empresas encontradas.</p></div>}
-    {hovered && <div className={styles.tooltip} style={{ left: hovered.x, top: hovered.y }}><strong>{hovered.company.name}</strong><span>{hovered.company.city} · {hovered.company.state}</span><small>Score {hovered.company.score}</small></div>}
+    {hovered && <div className={styles.tooltip} style={{ left: hovered.x, top: hovered.y }}><strong>{hovered.company.name}</strong><span>{hovered.company.city} · {hovered.company.state}{hovered.company.country ? ` · ${hovered.company.country}` : ""}</span><small>Score {hovered.company.score}</small></div>}
   </div>;
 }

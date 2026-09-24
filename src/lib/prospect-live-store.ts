@@ -5,8 +5,11 @@ export type SearchSnapshot = {
   createdAt: string;
   query: string;
   state: string;
+  regionName?: string;
+  countryCode?: string;
+  countryName?: string;
   city: string;
-  neighborhood: string;
+  neighborhood?: string;
   resultCount: number;
   pagesFetched: number;
   durationMs: number;
@@ -45,6 +48,9 @@ export function storeLiveSearch(snapshot: SearchSnapshot) {
     createdAt: snapshot.createdAt,
     query: snapshot.query,
     state: snapshot.state,
+    regionName: snapshot.regionName,
+    countryCode: snapshot.countryCode,
+    countryName: snapshot.countryName,
     city: snapshot.city,
     neighborhood: snapshot.neighborhood,
     resultCount: snapshot.resultCount,

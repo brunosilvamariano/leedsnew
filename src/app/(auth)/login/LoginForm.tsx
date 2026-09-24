@@ -11,6 +11,7 @@ export function LoginForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
+    window.localStorage.setItem("prospect.session", "active");
     // A full navigation is intentional here: it avoids the stalled client transition seen during local Turbopack development.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.assign("/dashboard");

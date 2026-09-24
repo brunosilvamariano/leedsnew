@@ -8,6 +8,8 @@ export type Company = {
   city: string;
   state: string;
   neighborhood: string;
+  country?: string;
+  countryCode?: string;
   address: string;
   website?: string;
   instagram?: string;

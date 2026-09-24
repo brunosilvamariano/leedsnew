@@ -4,7 +4,7 @@ export type IconName =
   | "dashboard" | "search" | "lead" | "pipeline" | "heart" | "list" | "calendar" | "settings"
   | "bell" | "chevronLeft" | "chevronRight" | "command" | "arrowUpRight" | "globe" | "instagram"
   | "whatsapp" | "website" | "filter" | "rows" | "table" | "close" | "plus" | "location" | "mail"
-  | "phone" | "check" | "star" | "message" | "target" | "chart" | "crown" | "clock" | "send" | "video";
+  | "phone" | "check" | "star" | "message" | "target" | "chart" | "crown" | "clock" | "send" | "video" | "logout";
 
 const paths: Record<IconName, React.ReactNode> = {
   dashboard: <><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></>,
@@ -35,6 +35,7 @@ const paths: Record<IconName, React.ReactNode> = {
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
   send: <><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></>,
   video: <><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3Z"/></>,
+  logout: <><path d="M10 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5"/><path d="M14 8l4 4-4 4M18 12H8"/></>,
 };
 
 export function Icon({ name, ...props }: { name: IconName } & SVGProps<SVGSVGElement>) {

@@ -1,0 +1,23 @@
+PROSPECT v0.6.0 — INTERNACIONALIZAÇÃO
+
+Implementado:
+- País como primeiro nível de localização.
+- Região/Estado dinâmico por país.
+- Cidade dinâmica por região/país.
+- Bairro/Distrito global com Google Places e busca por digitação.
+- Brasil mantém IBGE como fonte preferencial de bairros.
+- Empresas pesquisadas no Google Places com regionCode do país escolhido.
+- Company agora suporta country e countryCode.
+- Histórico de busca armazena país e nome da região.
+- Dashboard, Leads, Favoritos e Radar exibem localização internacional.
+- Sidebar e logout preservados.
+- .env preservado e .env.example ausente.
+
+Validação:
+- tsc --noEmit: OK
+- eslint src: OK
+- next build: não concluído neste container porque o Next tentou baixar o pacote SWC Linux e a rede do ambiente bloqueou registry.npmjs.org.
+
+Observação:
+- bairros globais não são uma lista exaustiva universal; Google Places retorna áreas conhecidas e permite busca por texto.
+- fonte de países/regiões/cidades exige atribuição ODbL; documentação incluída no README.

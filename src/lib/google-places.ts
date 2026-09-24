@@ -1,5 +1,4 @@
 import type { Company } from "@/data/companies";
-import { stateNames } from "@/data/brazil-states";
 import { inspectWebsite, mapWithConcurrency, type WebsiteSignals } from "@/lib/website-signals";
 
 const GOOGLE_TEXT_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText";
@@ -16,6 +15,7 @@ type GooglePlace = {
   displayName?: { text?: string };
   formattedAddress?: string;
   nationalPhoneNumber?: string;
+  internationalPhoneNumber?: string;
   websiteUri?: string;
   googleMapsUri?: string;
   businessStatus?: string;
@@ -46,12 +46,16 @@ function component(place: GooglePlace, ...types: string[]) {
 }
 
 function placeLocation(place: GooglePlace) {
-  const stateComponent = component(place, "administrative_area_level_1");
-  const cityComponent = component(place, "locality", "administrative_area_level_2");
-  const neighborhoodComponent = component(place, "neighborhood", "sublocality_level_1", "sublocality", "sublocality_level_2");
+  const countryComponent = component(place, "country");
+  const stateComponent = component(place, "administrative_area_level_1", "administrative_area_level_2");
+  const cityComponent = component(place, "locality", "postal_town", "administrative_area_level_2", "administrative_area_level_3");
+  const neighborhoodComponent = component(place, "neighborhood", "sublocality_level_1", "sublocality", "sublocality_level_2", "sublocality_level_3");
 
   return {
-    state: stateComponent?.shortText || stateComponent?.longText || "BR",
+    country: countryComponent?.longText || "—",
+    countryCode: countryComponent?.shortText?.toUpperCase() || "",
+    state: stateComponent?.longText || stateComponent?.shortText || "—",
+    stateCode: stateComponent?.shortText || "",
     city: cityComponent?.longText || "—",
     neighborhood: neighborhoodComponent?.longText || "—",
   };
@@ -62,7 +66,7 @@ function opportunityScore(place: GooglePlace, signals: WebsiteSignals) {
   if (!place.websiteUri) score += 28;
   if (signals.instagram) score += 12;
   if (signals.whatsapp) score += 14;
-  if (place.nationalPhoneNumber) score += 6;
+  if (place.nationalPhoneNumber || place.internationalPhoneNumber) score += 6;
   if (place.businessStatus === "OPERATIONAL") score += 4;
   if ((place.userRatingCount ?? 0) >= 10) score += 2;
   if ((place.userRatingCount ?? 0) >= 50) score += 1;
@@ -83,11 +87,11 @@ function readableType(place: GooglePlace, fallback: string) {
   return type.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function matchesRequestedLocation(place: GooglePlace, state?: string, city?: string, neighborhood?: string) {
+function matchesRequestedLocation(place: GooglePlace, countryCode?: string, region?: string, city?: string) {
   const actual = placeLocation(place);
-  if (state && actual.state !== "BR" && normalize(actual.state) !== normalize(state) && normalize(actual.state) !== normalize(stateNames[state] ?? state)) return false;
+  if (countryCode && actual.countryCode && normalize(actual.countryCode) !== normalize(countryCode)) return false;
+  if (region && actual.state !== "—" && ![actual.state, actual.stateCode].some((value) => normalize(value) === normalize(region))) return false;
   if (city && actual.city !== "—" && normalize(actual.city) !== normalize(city)) return false;
-  if (neighborhood && actual.neighborhood !== "—" && normalize(actual.neighborhood) !== normalize(neighborhood)) return false;
   return true;
 }
 
@@ -103,6 +107,7 @@ async function requestPage(apiKey: string, body: Record<string, unknown>): Promi
         "places.formattedAddress",
         "places.addressComponents",
         "places.nationalPhoneNumber",
+        "places.internationalPhoneNumber",
         "places.websiteUri",
         "places.googleMapsUri",
         "places.businessStatus",
@@ -122,34 +127,35 @@ async function requestPage(apiKey: string, body: Record<string, unknown>): Promi
     const errorText = await response.text();
     throw new Error(`GOOGLE_PLACES_${response.status}:${errorText.slice(0, 450)}`);
   }
-
   return response.json() as Promise<GoogleTextSearchResponse>;
 }
 
 export async function searchGooglePlaces({
   query,
-  state,
+  countryCode = "BR",
+  countryName = "Brasil",
+  region,
   city,
-  neighborhood,
   limit = MAX_RESULTS,
 }: {
   query: string;
-  state?: string;
+  countryCode?: string;
+  countryName?: string;
+  region?: string;
   city?: string;
-  neighborhood?: string;
   limit?: number;
 }): Promise<{ companies: Company[]; pagesFetched: number }> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY_NOT_CONFIGURED");
 
-  const location = [neighborhood, city, state ? stateNames[state] ?? state : undefined, "Brasil"].filter(Boolean).join(", ");
+  const location = [city, region, countryName].filter(Boolean).join(", ");
   const textQuery = [query || "empresas", location].filter(Boolean).join(" em ");
   const target = Math.min(MAX_RESULTS, Math.max(1, limit));
 
   const commonBody = {
     textQuery,
     languageCode: "pt-BR",
-    regionCode: "BR",
+    regionCode: countryCode.toLowerCase(),
     pageSize: Math.min(20, target),
     includePureServiceAreaBusinesses: true,
   };
@@ -159,26 +165,18 @@ export async function searchGooglePlaces({
   let pagesFetched = 0;
 
   do {
-    const payload = await requestPage(apiKey, {
-      ...commonBody,
-      ...(nextPageToken ? { pageToken: nextPageToken } : {}),
-    });
-
+    const payload = await requestPage(apiKey, { ...commonBody, ...(nextPageToken ? { pageToken: nextPageToken } : {}) });
     pagesFetched += 1;
     for (const place of payload.places ?? []) {
-      if (!matchesRequestedLocation(place, state, city, neighborhood)) continue;
+      if (!matchesRequestedLocation(place, countryCode, region, city)) continue;
       if (place.id && allPlaces.some((item) => item.id === place.id)) continue;
       allPlaces.push(place);
       if (allPlaces.length >= target) break;
     }
-
     nextPageToken = payload.nextPageToken;
   } while (nextPageToken && allPlaces.length < target && pagesFetched < 3);
 
-  const enriched = await mapWithConcurrency(allPlaces.slice(0, target), 8, async (place) => ({
-    place,
-    signals: await inspectWebsite(place.websiteUri),
-  }));
+  const enriched = await mapWithConcurrency(allPlaces.slice(0, target), 8, async (place) => ({ place, signals: await inspectWebsite(place.websiteUri) }));
 
   const companies = enriched.map(({ place, signals }, index) => {
     const name = place.displayName?.text?.trim() || `Empresa ${index + 1}`;
@@ -188,7 +186,7 @@ export async function searchGooglePlaces({
       !place.websiteUri ? "Nenhum website encontrado" : "Website encontrado",
       signals.instagram ? "Instagram encontrado no website" : undefined,
       signals.whatsapp ? "WhatsApp encontrado no website" : undefined,
-      place.nationalPhoneNumber ? "Telefone público disponível" : undefined,
+      place.nationalPhoneNumber || place.internationalPhoneNumber ? "Telefone público disponível" : undefined,
       place.businessStatus === "OPERATIONAL" ? "Estabelecimento marcado como operacional" : undefined,
       typeof place.rating === "number" ? `Avaliação ${place.rating.toFixed(1)} no Google` : undefined,
     ].filter(Boolean) as string[];
@@ -202,13 +200,15 @@ export async function searchGooglePlaces({
       document: "Não disponível nesta fonte",
       niche: readableType(place, query),
       city: actual.city !== "—" ? actual.city : city || "—",
-      state: actual.state !== "BR" ? actual.state : state || "BR",
-      neighborhood: actual.neighborhood !== "—" ? actual.neighborhood : neighborhood || "—",
-      address: place.formattedAddress || [city, state].filter(Boolean).join(" - ") || "Brasil",
+      state: actual.state !== "—" ? actual.state : region || "—",
+      neighborhood: actual.neighborhood !== "—" ? actual.neighborhood : "—",
+      country: actual.country !== "—" ? actual.country : countryName,
+      countryCode: actual.countryCode || countryCode,
+      address: place.formattedAddress || [city, region, countryName].filter(Boolean).join(" - ") || countryName,
       website: place.websiteUri,
       instagram: signals.instagram,
       whatsapp: signals.whatsapp,
-      phone: place.nationalPhoneNumber,
+      phone: place.internationalPhoneNumber || place.nationalPhoneNumber,
       email: signals.email,
       score,
       status: scoreLabel(score),

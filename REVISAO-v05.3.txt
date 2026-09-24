@@ -1,0 +1,11 @@
+Prospect v0.5.3 — Ajustes de interface e sessão
+
+- Bairro deixou de usar o datalist nativo do navegador.
+- Novo combobox de bairros com o mesmo padrão visual de Estado/Cidade.
+- Busca por texto dentro dos bairros, seleção, opção "Todos os bairros" e scrollbar própria.
+- Filtros rápidos refinados com visual azul/gelo e ícones coloridos.
+- Botões "Mais filtros", "Buscar empresas", ordenação e troca Lista/Tabela refinados.
+- Menu do usuário no header agora abre um dropdown premium.
+- Adicionada ação "Sair".
+- Login cria uma sessão local e páginas autenticadas redirecionam ao login quando a sessão foi encerrada.
+- Mantidos .env preenchido, busca real, bairros sincronizados, Prisma e demais funcionalidades da v0.5.2.

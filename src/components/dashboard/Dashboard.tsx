@@ -124,14 +124,14 @@ export function Dashboard() {
     </section>
 
     <section className={styles.metrics}>
-      <MetricCard icon="target" label="Empresas encontradas" value={String(companies.length)} detail={snapshot?`última busca • ${snapshot.city||snapshot.state||"Brasil"}`:"aguardando primeira busca"} tone="blue" bars={bars}/>
+      <MetricCard icon="target" label="Empresas encontradas" value={String(companies.length)} detail={snapshot?`última busca • ${snapshot.city||snapshot.regionName||snapshot.countryName||snapshot.state||"Brasil"}`:"aguardando primeira busca"} tone="blue" bars={bars}/>
       <MetricCard icon="lead" label="Leads salvos" value={String(leads.length)} detail="adicionados a partir de resultados reais" tone="orange" bars={[18,26,32,28,44,52,49,66,72,81]}/>
       <MetricCard icon="star" label="Alto potencial" value={String(high)} detail={companies.length?`${Math.round((high/companies.length)*100)}% da última busca`:"sem dados ainda"} tone="cyan" bars={[16,22,30,42,38,50,58,70,66,78]}/>
     </section>
 
     <section className={styles.topGrid}>
       <OpportunityChart history={history} snapshot={snapshot}/>
-      <article className={`${styles.card} ${styles.radarCard}`}><header className={styles.cardHeader}><div className={styles.cardTitle}><span className={styles.titleIcon}><Icon name="target"/></span><strong>Mapa de oportunidades</strong></div><span className={styles.periodPill}>{snapshot?.city||snapshot?.state||"Brasil"}</span></header><LiveRadar companies={companies}/></article>
+      <article className={`${styles.card} ${styles.radarCard}`}><header className={styles.cardHeader}><div className={styles.cardTitle}><span className={styles.titleIcon}><Icon name="target"/></span><strong>Mapa de oportunidades</strong></div><span className={styles.periodPill}>{snapshot?.city||snapshot?.regionName||snapshot?.countryName||snapshot?.state||"Brasil"}</span></header><LiveRadar companies={companies}/></article>
     </section>
 
     <section className={styles.bottomGrid}>
