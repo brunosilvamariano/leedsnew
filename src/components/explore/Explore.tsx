@@ -77,7 +77,7 @@ export function Explore() {
   const [withPhone, setWithPhone] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [leadIds, setLeadIds] = useState<string[]>([]);
-  const [toast, setToast] = useState("");
+  const [queryError, setQueryError] = useState(false);
   const [liveCompanies, setLiveCompanies] = useState<Company[]>([]);
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const [searching, setSearching] = useState(false);
@@ -228,13 +228,11 @@ export function Explore() {
 
   const runLiveSearch = async () => {
     if (!query.trim()) {
-      setToast("Digite um nicho ou atividade antes de pesquisar.");
-      window.setTimeout(() => setToast(""), 2800);
+      setQueryError(true);
       return;
     }
+    setQueryError(false);
     if (!countryCode) {
-      setToast("Escolha um país para pesquisar.");
-      window.setTimeout(() => setToast(""), 2800);
       return;
     }
 
@@ -288,8 +286,6 @@ export function Explore() {
   const addLead = (company: Company) => {
     addLeadCompany(company);
     setLeadIds((current) => current.includes(company.id) ? current : [...current, company.id]);
-    setToast(`${company.name} adicionada aos leads.`);
-    window.setTimeout(() => setToast(""), 2800);
   };
 
   const toggleFavorite = (company: Company) => {
@@ -351,10 +347,20 @@ export function Explore() {
       </div>
 
       <div className={styles.searchCard}>
-        <div className={styles.searchMain}>
+        {queryError && <p className={styles.searchError}>É preciso colocar o nicho.</p>}
+        <div className={`${styles.searchMain} ${queryError ? styles.searchMainError : ""}`} aria-invalid={queryError}>
           <Icon name="search" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void runLiveSearch(); }} placeholder="Buscar nicho, empresa ou atividade..." aria-label="Buscar nicho, empresa ou atividade" />
-          <span className={styles.searchHint}>Ex.: contabilidade, dentists, barber shops</span>
+          <input
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              if (event.target.value.trim()) setQueryError(false);
+            }}
+            onKeyDown={(event) => { if (event.key === "Enter") void runLiveSearch(); }}
+            placeholder="Buscar nicho, empresa ou atividade..."
+            aria-label="Buscar nicho, empresa ou atividade"
+          />
+          <span className={styles.searchHint}>Ex.: contabilidade, dentista, barbearia...</span>
         </div>
 
         <div className={styles.locationGrid}>
@@ -466,7 +472,6 @@ export function Explore() {
         <div className={styles.drawerOverlay} onMouseDown={() => setFilterOpen(false)}><aside className={`${styles.drawer} ${styles.filterDrawer}`} onMouseDown={(event) => event.stopPropagation()}><div className={styles.filterHeader}><div><span>Filtros</span><h2>Refinar resultados reais</h2></div><button type="button" onClick={() => setFilterOpen(false)}><Icon name="close" /></button></div><div className={styles.filterBody}><div className={styles.filterGroup}><h3>Oportunidade</h3><label>Score mínimo<select value={minScore} onChange={(event) => setMinScore(Number(event.target.value))}><option value="0">Qualquer score</option><option value="70">70+</option><option value="80">80+</option><option value="90">90+</option></select></label></div><div className={styles.filterGroup}><h3>Contato</h3><label className={styles.checkRow}><input type="checkbox" checked={withEmail} onChange={(event) => setWithEmail(event.target.checked)} /><span>Possui e-mail encontrado</span></label><label className={styles.checkRow}><input type="checkbox" checked={withPhone} onChange={(event) => setWithPhone(event.target.checked)} /><span>Possui telefone ou WhatsApp</span></label></div><div className={styles.filterGroup}><h3>Fontes geográficas</h3><div className={styles.readOnlyFilter}><span>Empresas</span><strong>Google Places ao vivo</strong></div><div className={styles.readOnlyFilter}><span>Países / regiões / cidades</span><strong>World Countries Cities DB</strong></div></div></div><div className={styles.filterFooter}><button type="button" onClick={resetFilters}>Limpar</button><button type="button" onClick={() => setFilterOpen(false)}>Ver {filtered.length} resultados</button></div></aside></div>
       )}
 
-      {toast && <div className={styles.toast}><span><Icon name="check" /></span><div><strong>Prospect</strong><p>{toast}</p></div></div>}
     </section>
   );
 }
