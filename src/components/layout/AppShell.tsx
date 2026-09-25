@@ -64,9 +64,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ""}`}>
       <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
         <div className={styles.brandRow}>
-          <Link href="/dashboard" className={styles.brand} aria-label="Prospect">
-            <span className={styles.brandMark}><i/><b/></span>
-            <span className={styles.brandName}>Prospect</span>
+          <Link href="/dashboard" className={styles.brand} aria-label="BizPeek">
+            <Image
+              className={styles.brandLogo}
+              src={collapsed ? "/logo/favicon.png" : "/logo/logo BizPeek.png"}
+              alt="BizPeek"
+              width={collapsed ? 34 : 165}
+              height={collapsed ? 34 : 50}
+              priority
+            />
           </Link>
           <button className={styles.collapse} onClick={() => setCollapsed((v) => !v)} aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>
             <Icon name={collapsed ? "chevronRight" : "chevronLeft"}/>
