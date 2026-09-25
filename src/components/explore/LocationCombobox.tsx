@@ -99,10 +99,14 @@ export function LocationCombobox({
           aria-expanded={open}
         >
           <span className={styles.comboSelection}>
-            {selected?.badge && <b className={styles.comboBadge}>{selected.badge}</b>}
+            {selected?.badge && (
+              <b className={styles.comboBadge}>
+                {selected.badge.startsWith("http") ? <img src={selected.badge} alt="" /> : selected.badge}
+              </b>
+            )}
             <span>{loading ? "Carregando..." : selected?.label || placeholder}</span>
           </span>
-          <span className={styles.comboChevron} aria-hidden="true">⌄</span>
+          <span className={styles.comboChevron} aria-hidden="true" />
         </button>
 
         {open && (
@@ -133,7 +137,11 @@ export function LocationCombobox({
                     onClick={() => choose(option)}
                   >
                     <span className={styles.comboOptionMain}>
-                      {option.badge && <b className={styles.comboBadge}>{option.badge}</b>}
+                      {option.badge && (
+                        <b className={styles.comboBadge}>
+                          {option.badge.startsWith("http") ? <img src={option.badge} alt="" /> : option.badge}
+                        </b>
+                      )}
                       <span>{option.label}</span>
                     </span>
                     {option.meta && <small>{option.meta}</small>}

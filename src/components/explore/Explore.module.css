@@ -41,15 +41,16 @@
   padding: 0 13px;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: var(--surface);
+  background: #f7f9fb;
   color: var(--text-secondary);
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
+  box-shadow: none;
 }
 
 .savedButton:hover {
   border-color: var(--border-strong);
   color: var(--text-primary);
+  background: #f2f6fa;
 }
 
 .savedButton svg {
@@ -62,7 +63,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xs);
+  box-shadow: none;
 }
 
 .searchMain {
@@ -71,16 +72,16 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid #dfe5ee;
   border-radius: 15px;
   padding: 0 16px;
-  background: #fff;
+  background: #f9fafc;
   transition: border-color var(--motion-base), box-shadow var(--motion-base);
 }
 
 .searchMain:focus-within {
-  border-color: var(--brand-300);
-  box-shadow: 0 0 0 4px rgb(22 119 255 / .08);
+  border-color: #bfd9f9;
+  box-shadow: 0 0 0 3px rgb(22 119 255 / .05);
 }
 
 .searchMainError {
@@ -205,20 +206,21 @@
   align-items: center;
   gap: 7px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid #dfe5ee;
   border-radius: 999px;
-  background: var(--surface);
+  background: #f7f9fb;
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 540;
   cursor: pointer;
   transition: all var(--motion-base);
+  box-shadow: none;
 }
 
 .quick:hover,
 .moreFilters:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-soft);
+  border-color: #cedae7;
+  background: #f1f5fa;
   color: var(--text-primary);
 }
 
@@ -229,9 +231,24 @@
   height: 14px;
 }
 
+.quick[data-kind="website"] svg,
+.quickActive[data-kind="website"] svg {
+  color: #2878c8;
+}
+
+.quick[data-kind="instagram"] svg,
+.quickActive[data-kind="instagram"] svg {
+  color: #c44791;
+}
+
+.quick[data-kind="whatsapp"] svg,
+.quickActive[data-kind="whatsapp"] svg {
+  color: #1eaa6f;
+}
+
 .quickActive {
-  border-color: var(--brand-200);
-  background: var(--brand-50);
+  border-color: #d4e6ff;
+  background: #edf5ff;
   color: var(--brand-700);
 }
 
@@ -399,15 +416,15 @@
   border: 1px solid var(--border);
   border-radius: 15px;
   background: var(--surface);
-  box-shadow: var(--shadow-xs);
+  box-shadow: none;
   overflow: hidden;
-  transition: transform var(--motion-fast), border-color var(--motion-base), box-shadow var(--motion-base);
+  transition: border-color var(--motion-base), background var(--motion-base);
 }
 
 .companyCard:hover {
-  transform: translateY(-1px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  transform: none;
+  border-color: #d7e3ef;
+  box-shadow: none;
 }
 
 .companyOpen {
@@ -1160,8 +1177,8 @@
   gap: 9px;
   padding: 16px 24px;
   border-top: 1px solid var(--border);
-  background: rgb(255 255 255 / .94);
-  backdrop-filter: blur(14px);
+  background: rgb(255 255 255 / .96);
+  backdrop-filter: blur(8px);
 }
 
 .filterFooter button {
@@ -1174,14 +1191,15 @@
 
 .filterFooter button:first-child {
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: #f7f9fb;
   color: var(--text-secondary);
 }
 
 .filterFooter button:last-child {
   border: 0;
-  background: var(--brand-500);
+  background: #1772e5;
   color: white;
+  box-shadow: none;
 }
 
 .toast {
@@ -1531,18 +1549,17 @@
   padding: 0 15px;
   border: 0;
   border-radius: 11px;
-  background: var(--brand-500);
+  background: #1772e5;
   color: white;
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
-  box-shadow: 0 7px 18px rgb(22 119 255 / .16);
-  transition: transform var(--motion-fast), background var(--motion-fast);
+  box-shadow: none;
+  transition: background var(--motion-fast), opacity var(--motion-fast);
 }
 
 .liveSearchButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: var(--brand-600);
+  background: #1469d0;
 }
 
 .liveSearchButton:disabled {
@@ -1725,121 +1742,6 @@
   }
 }
 
-/* v0.6.1 — controles premium */
-.quick,
-.quickActive,
-.moreFilters {
-  height: 38px;
-  padding: 0 13px;
-  border-color: #d8e3ec;
-  background: linear-gradient(180deg, #fff, #fbfdff);
-  color: #496178;
-  font-weight: 620;
-  box-shadow: 0 3px 10px rgb(35 82 125 / .035);
-}
-
-.quick:hover,
-.moreFilters:hover {
-  border-color: #bcd8f4;
-  background: #f1f8ff;
-  color: #0d63d6;
-  transform: translateY(-1px);
-  box-shadow: 0 7px 16px rgb(38 102 161 / .07);
-}
-
-.quickActive {
-  border-color: #acd4ff;
-  background: linear-gradient(180deg, #eff7ff, #e7f3ff);
-  color: #0b64da;
-  box-shadow: inset 0 0 0 1px rgb(65 143 236 / .04), 0 5px 14px rgb(35 105 172 / .06);
-}
-
-.quick[data-kind="website"] svg,
-.quickActive[data-kind="website"] svg {
-  color: #1478f0;
-}
-
-.quick[data-kind="instagram"] svg,
-.quickActive[data-kind="instagram"] svg {
-  color: #c43bcf;
-}
-
-.quick[data-kind="whatsapp"] svg,
-.quickActive[data-kind="whatsapp"] svg {
-  color: #20a969;
-}
-
-.moreFilters {
-  border-radius: 12px;
-  background: #f8fbfe;
-  color: #425b72;
-}
-
-.moreFilters svg {
-  color: #6e8498;
-}
-
-.moreFilters b {
-  background: #dceeff;
-  color: #0c67dc;
-}
-
-.liveSearchButton {
-  height: 42px;
-  min-width: 156px;
-  padding: 0 18px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #2588ff 0%, #0f6ce8 55%, #095fd2 100%);
-  box-shadow: 0 10px 22px rgb(15 108 232 / .20), inset 0 1px 0 rgb(255 255 255 / .22);
-}
-
-.liveSearchButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #147dff 0%, #0b65de 55%, #0758c5 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 13px 26px rgb(15 108 232 / .24), inset 0 1px 0 rgb(255 255 255 / .22);
-}
-
-.sortField select {
-  border-color: #d8e3ec;
-  background: #fff;
-  box-shadow: 0 3px 10px rgb(35 82 125 / .035);
-}
-
-.viewSwitch {
-  padding: 4px;
-  border-color: #d8e3ec;
-  background: #f8fbfe;
-  box-shadow: 0 3px 10px rgb(35 82 125 / .035);
-}
-
-.viewSwitch button {
-  width: 34px;
-  height: 34px;
-  color: #7990a5;
-  transition: background var(--motion-fast), color var(--motion-fast), box-shadow var(--motion-fast);
-}
-
-.viewSwitch button:hover {
-  color: #0c67dd;
-  background: #eef6ff;
-}
-
-.viewSwitch button[data-active="true"] {
-  background: #fff;
-  color: #0c67dd;
-  box-shadow: 0 3px 9px rgb(34 86 134 / .08);
-}
-
-@media (max-width: 760px) {
-
-  .quick,
-  .quickActive,
-  .moreFilters {
-    min-height: 38px;
-  }
-}
-
-
 /* v0.6.2 — localização global pesquisável */
 .locationGrid {
   position: relative;
@@ -1876,22 +1778,22 @@
   padding: 0 12px;
   border: 1px solid #d7e2ec;
   border-radius: 12px;
-  background: linear-gradient(180deg, #fbfdff 0%, #f4f8fb 100%);
+  background: #f8fafc;
   color: var(--text-primary);
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .82), 0 3px 10px rgb(28 73 113 / .035);
-  transition: border-color var(--motion-fast), box-shadow var(--motion-fast), background var(--motion-fast);
+  box-shadow: none;
+  transition: border-color var(--motion-fast), background var(--motion-fast);
 }
 
 .comboTrigger:hover:not(:disabled) {
-  border-color: #b9d5ef;
-  background: #f8fbff;
+  border-color: #c7d8eb;
+  background: #f3f8ff;
 }
 
 .comboTrigger[data-open="true"] {
-  border-color: #5ca7f5;
+  border-color: #b8d5f7;
   background: #fff;
-  box-shadow: 0 0 0 4px rgb(22 119 255 / .08), 0 10px 24px rgb(37 87 130 / .07);
+  box-shadow: none;
 }
 
 .comboTrigger:disabled {
@@ -1901,9 +1803,11 @@
 
 .comboSelection {
   min-width: 0;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 9px;
+  overflow: hidden;
 }
 
 .comboSelection>span {
@@ -1914,31 +1818,48 @@
 }
 
 .comboBadge {
-  min-width: 28px;
+  width: 22px;
   height: 22px;
   display: inline-grid;
   place-items: center;
   flex: 0 0 auto;
-  padding: 0 6px;
+  padding: 0;
   border-radius: 7px;
   background: #eaf4ff;
-  color: #0d67dc;
-  font-size: 9px;
-  font-weight: 760;
-  letter-spacing: .04em;
+  overflow: hidden;
+}
+
+.comboBadge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
 }
 
 .comboChevron {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
+  margin: 0;
   color: #71879b;
-  font-size: 17px;
-  line-height: 1;
-  transform: translateY(-2px);
   transition: transform var(--motion-fast);
 }
 
+.comboChevron::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
 .comboTrigger[data-open="true"] .comboChevron {
-  transform: translateY(2px) rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .comboMenu {

@@ -54,7 +54,7 @@ export async function getWorldCountries() {
       code: country.iso2.toUpperCase(),
       name: portugueseRegionName(country.iso2, country.name),
       nativeName: country.native || country.name,
-      flag: country.emoji || "🌍",
+      flag: country.iso2 ? `https://flagcdn.com/w40/${country.iso2.toLowerCase()}.png` : (country.emoji || "🌍"),
       region: country.region || "",
       subregion: country.subregion || "",
       currency: country.currency || "",

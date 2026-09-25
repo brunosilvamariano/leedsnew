@@ -61,7 +61,7 @@ export function Explore() {
   const [countryCode, setCountryCode] = useState("BR");
   const [regionCode, setRegionCode] = useState("");
   const [city, setCity] = useState("");
-  const [countries, setCountries] = useState<CountryOption[]>([{ code: "BR", name: "Brasil", flag: "🇧🇷" }]);
+  const [countries, setCountries] = useState<CountryOption[]>([{ code: "BR", name: "Brasil", flag: "https://flagcdn.com/w40/br.png" }]);
   const [regions, setRegions] = useState<RegionOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
   const [countriesLoading, setCountriesLoading] = useState(true);
@@ -300,7 +300,7 @@ export function Explore() {
     () => countries.map((item) => ({
       value: item.code,
       label: item.name,
-      badge: item.code,
+      badge: item.flag || item.code,
     })),
     [countries],
   );
