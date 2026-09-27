@@ -1,6 +1,13 @@
 "use client";
-import { useCallback, useState } from "react";
-import type { EventData, LeadData, RecordItem } from "@/lib/crm-types";
+import { useCallback, useMemo, useState } from "react";
+import type {
+  EventData,
+  LeadData,
+  NoteData,
+  RecordItem,
+} from "@/lib/crm-types";
+import { brazilianDates, noteDay } from "@/lib/calendar-dates";
+import { Notes } from "./Notes";
 import { useRecords, saveRecord, removeRecord } from "@/lib/records-client";
 import { Heading, Modal } from "./Shared";
 const key = (date: Date) =>
@@ -11,13 +18,31 @@ const localInput = (iso: string) => {
 };
 export function Calendar() {
   const events = useRecords<EventData>("event"),
+    notes = useRecords<NoteData>("note"),
     leads = useRecords<LeadData>("lead");
   const [month, setMonth] = useState(
       () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     ),
     [selected, setSelected] = useState(() => key(new Date())),
     [edit, setEdit] = useState<RecordItem<EventData> | "new" | null>(null),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [showDates, setShowDates] = useState(true);
+  const year = month.getFullYear();
+  const holidays = useMemo(
+    () => [year - 1, year, year + 1].flatMap(brazilianDates),
+    [year],
+  );
+  const notesFor = (day: string) =>
+    notes.filter((note) =>
+      note.data.repeatYearly
+        ? noteDay(note).slice(5) === day.slice(5)
+        : noteDay(note) === day,
+    );
+  const selectDate = (day: string) => {
+    setSelected(day);
+    const date = new Date(`${day}T12:00:00`);
+    setMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+  };
   const close = useCallback(() => setEdit(null), []);
   const start = new Date(month.getFullYear(), month.getMonth(), 1);
   start.setDate(start.getDate() - start.getDay());
@@ -64,12 +89,40 @@ export function Calendar() {
     <>
       <Heading
         title="Um dia organizado. Mais possibilidades."
-        text="Planeje seus contatos e mantenha cada conversa no radar."
+        text="Contatos, anotações e datas especiais. Tudo organizado por dia."
       >
         <button className="primary" onClick={() => setEdit("new")}>
           ＋ Novo compromisso
         </button>
       </Heading>
+      <div className="calendar-controls">
+        <label>
+          Ir para uma data
+          <input
+            type="date"
+            min="1900-01-01"
+            max="2199-12-31"
+            value={selected}
+            onChange={(e) => {
+              if (e.target.value && e.target.validity.valid)
+                selectDate(e.target.value);
+            }}
+          />
+        </label>
+        <label className="calendar-check">
+          <input
+            type="checkbox"
+            checked={showDates}
+            onChange={(e) => setShowDates(e.target.checked)}
+          />{" "}
+          Mostrar datas brasileiras
+        </label>
+        <div className="calendar-legend">
+          <span>🟣 Compromissos</span>
+          <span>📝 Anotações</span>
+          <span>🎉 Datas especiais</span>
+        </div>
+      </div>
       <div className="calendar-layout">
         <section className="panel">
           <div className="panel-heading">
@@ -127,10 +180,30 @@ export function Calendar() {
               <button
                 key={key(d)}
                 aria-label={d.toLocaleDateString("pt-BR")}
+                aria-pressed={key(d) === selected}
                 onClick={() => setSelected(key(d))}
                 className={`calendar-day ${d.getMonth() !== month.getMonth() ? "outside" : ""} ${key(d) === selected ? "selected" : ""} ${key(d) === key(new Date()) ? "today" : ""}`}
               >
                 <span>{d.getDate()}</span>
+                {showDates &&
+                  holidays
+                    .filter((item) => item.date === key(d))
+                    .slice(0, 1)
+                    .map((item) => (
+                      <small
+                        className="holiday-label"
+                        key={item.title}
+                        title={`${item.title} · ${item.type}`}
+                      >
+                        {item.icon} {item.title}
+                      </small>
+                    ))}
+                {notesFor(key(d)).length > 0 && (
+                  <small className="note-label">
+                    📝 {notesFor(key(d)).length}{" "}
+                    {notesFor(key(d)).length === 1 ? "anotação" : "anotações"}
+                  </small>
+                )}
                 {events
                   .filter((r) => key(new Date(r.data.date)) === key(d))
                   .slice(0, 2)
@@ -140,6 +213,15 @@ export function Calendar() {
                       {r.data.title}
                     </small>
                   ))}
+                {events.filter((r) => key(new Date(r.data.date)) === key(d))
+                  .length > 2 && (
+                  <small>
+                    +
+                    {events.filter((r) => key(new Date(r.data.date)) === key(d))
+                      .length - 2}{" "}
+                    compromissos
+                  </small>
+                )}
               </button>
             ))}
           </div>
@@ -153,12 +235,27 @@ export function Calendar() {
                   month: "long",
                 })}
               </h2>
-              <p>{selectedEvents.length} compromissos no dia</p>
+              <p>
+                {selectedEvents.length} compromissos ·{" "}
+                {notesFor(selected).length} anotações
+              </p>
             </div>
             <span className="chip">
               {selectedEvents.filter((r) => r.data.done).length} concluídos
             </span>
           </div>
+          {showDates &&
+            holidays
+              .filter((item) => item.date === selected)
+              .map((item) => (
+                <div className="brazilian-date" key={item.title}>
+                  <span aria-hidden="true">{item.icon}</span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <small>{item.type}</small>
+                  </div>
+                </div>
+              ))}
           {selectedEvents.map((row) => (
             <article className="event-item" key={row.id}>
               <span
@@ -200,8 +297,21 @@ export function Calendar() {
           >
             ＋ Agendar neste dia
           </button>
+          <section className="calendar-notes">
+            <Notes
+              key={selected}
+              selectedDate={selected}
+              onSelectDate={selectDate}
+            />
+          </section>
         </aside>
       </div>
+      <p className="calendar-scope">
+        Calendário nacional e principais datas comemorativas. Feriados locais e
+        pontos facultativos dependem da legislação e do calendário de cada
+        região; Cinzas pode ter expediente parcial. Cadastre outras datas em uma
+        anotação anual.
+      </p>
       {edit && (
         <Modal
           title={

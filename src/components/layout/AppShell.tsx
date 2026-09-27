@@ -17,7 +17,6 @@ const navigation: [string, string, IconName][] = [
   ["/leads", "Meus leads", "lead"],
   ["/pipeline", "Pipeline", "pipeline"],
   ["/agenda", "Calendário", "calendar"],
-  ["/anotacoes", "Anotações", "message"],
   ["/favoritos", "Favoritos", "star"],
 ];
 export function Avatar({
@@ -118,16 +117,15 @@ export function AppShell({
           </div>
           <p className="nav-caption">WORKSPACE</p>
           <nav aria-label="Navegação principal">
-            {links.map(([href, label, icon], i) => (
+            {links.map(([href, label, icon]) => (
               <Link
                 onClick={() => setMenu(false)}
                 key={href}
                 href={href}
-                className={`${path === href ? "selected" : ""} ${i === 7 ? "nav-separated" : ""}`}
+                className={`${path === href ? "selected" : ""} ${href === "/assinatura" ? "nav-separated" : ""}`}
               >
                 <Icon name={icon} />
                 <span>{label}</span>
-                {href === "/anotacoes" && <i className="new-dot" />}
               </Link>
             ))}
           </nav>

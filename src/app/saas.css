@@ -1767,3 +1767,221 @@ p {
     align-items: flex-start;
   }
 }
+/* Agenda diária e acompanhamento de recebimentos. */
+.calendar-controls {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+.calendar-controls > label:first-child {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.calendar-controls input[type="date"] {
+  border: 1px solid #dfd8ed;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: white;
+  color: #49375f;
+}
+.calendar-check {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+}
+.calendar-check input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #8064ca;
+}
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #665777;
+}
+.calendar-grid .calendar-day {
+  min-height: 138px;
+  overflow: hidden;
+}
+.calendar-grid .calendar-day .holiday-label {
+  background: #fff0d3;
+  color: #765013;
+}
+.calendar-grid .calendar-day .note-label {
+  background: #dcefe4;
+  color: #285d46;
+}
+.brazilian-date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: #fff4df;
+  color: #755323;
+}
+.brazilian-date > span {
+  font-size: 25px;
+}
+.brazilian-date strong,
+.brazilian-date small {
+  display: block;
+}
+.brazilian-date small {
+  margin-top: 4px;
+  font-size: 11px;
+}
+.calendar-notes {
+  margin-top: 24px;
+  border-top: 1px solid #e5deef;
+  padding-top: 24px;
+}
+.calendar-notes .notes-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.calendar-notes .note-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.calendar-notes .toolbar {
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.calendar-notes .tabs {
+  flex-wrap: wrap;
+}
+.calendar-scope {
+  margin: 16px 0;
+  color: #70657c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.day-notes-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.payment-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+.payment-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0 18px;
+}
+.payment-totals > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #ede7fa;
+}
+.payment-totals > div:first-child {
+  background: #e3f0e8;
+  color: #285e45;
+}
+.payment-totals > div:nth-child(3) {
+  background: #fff0df;
+  color: #805325;
+}
+.payment-totals small {
+  font-size: 12px;
+}
+.payment-totals strong {
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.payment-totals > p {
+  grid-column: 1/-1;
+  margin: 0;
+  font-size: 12px;
+  color: #73677e;
+}
+.installment-list {
+  display: grid;
+  gap: 12px;
+}
+.installment {
+  border: 1px solid #e3ddeb;
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.installment.is-paid {
+  border-color: #99c7aa;
+  background: #f4faf6;
+}
+.installment.is-overdue {
+  border-color: #e4b18d;
+  background: #fffbf7;
+}
+.installment-title {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.installment-title span {
+  font-size: 12px;
+}
+.payment-mini {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+.payment-mini small {
+  font-size: 11px;
+  color: #6e607a;
+  line-height: 1.6;
+}
+.payment-status {
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  width: fit-content;
+  background: #efeafa;
+  color: #65479a;
+}
+.payment-status.paid {
+  background: #dfeee4;
+  color: #285e45;
+}
+.payment-status.overdue {
+  background: #ffeadb;
+  color: #89431f;
+}
+.kanban-card > .secondary {
+  width: 100%;
+  margin-bottom: 10px;
+}
+@media (max-width: 650px) {
+  .payment-totals {
+    grid-template-columns: 1fr;
+  }
+  .calendar-grid .calendar-day {
+    min-height: 112px;
+    padding: 5px 2px;
+  }
+  .calendar-grid .calendar-day small {
+    display: block;
+    font-size: 9px;
+    padding: 3px 2px;
+  }
+  .calendar-notes .notes-grid {
+    grid-template-columns: 1fr;
+  }
+}

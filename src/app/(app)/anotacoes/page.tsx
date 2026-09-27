@@ -1,2 +1,4 @@
-import { Notes } from '@/components/saas/Notes';
-export default function Page(){return <Notes/>;}
+import { redirect } from "next/navigation";
+export default function Page() {
+  redirect("/agenda");
+}

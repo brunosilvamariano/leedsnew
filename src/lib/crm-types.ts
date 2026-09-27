@@ -1,4 +1,5 @@
 import type { Company } from "@/data/companies";
+import type { PaymentPlan } from "./payment-plan";
 export const stages = [
   "Novo",
   "Contatado",
@@ -13,6 +14,7 @@ export type LeadData = Company & {
   value: number;
   contactAt?: string;
   description?: string;
+  paymentPlan?: PaymentPlan;
 };
 export type NoteData = {
   title: string;
@@ -20,6 +22,8 @@ export type NoteData = {
   category: string;
   color: string;
   pinned: boolean;
+  date?: string;
+  repeatYearly?: boolean;
 };
 export type EventData = {
   title: string;

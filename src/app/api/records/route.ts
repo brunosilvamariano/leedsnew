@@ -5,6 +5,7 @@ import { z } from "zod";
 import { currentUser, validOrigin } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { stages } from "@/lib/crm-types";
+import { daySchema, paymentPlanSchema } from "@/lib/payment-plan";
 
 const text = z.string().max(10000);
 const company = z
@@ -15,6 +16,7 @@ const company = z
     stage: z.enum(stages).optional(),
     value: z.number().min(0).max(1e12).optional(),
     contactAt: z.iso.datetime().optional(),
+    paymentPlan: paymentPlanSchema.optional(),
   })
   .passthrough();
 const schemas = {
@@ -26,6 +28,8 @@ const schemas = {
     category: z.string().max(80),
     color: z.enum(["violet", "mint", "peach", "blue", "rose"]),
     pinned: z.boolean(),
+    date: daySchema.optional(),
+    repeatYearly: z.boolean().optional(),
   }),
   event: z.object({
     title: z.string().min(1).max(200),

@@ -2,7 +2,8 @@
 import { useCallback, useState } from "react";
 import type { NoteData, RecordItem } from "@/lib/crm-types";
 import { useRecords, saveRecord, removeRecord } from "@/lib/records-client";
-import { Empty, Heading, Modal } from "./Shared";
+import { Empty, Modal } from "./Shared";
+import { noteDay } from "@/lib/calendar-dates";
 const colors = {
   violet: "#d6c4eb",
   mint: "#c6e1ce",
@@ -10,17 +11,28 @@ const colors = {
   blue: "#cad9f0",
   rose: "#eccbd9",
 };
-export function Notes() {
+export function Notes({
+  selectedDate,
+  onSelectDate,
+}: {
+  selectedDate: string;
+  onSelectDate: (date: string) => void;
+}) {
   const notes = useRecords<NoteData>("note");
   const [filter, setFilter] = useState("Todas"),
     [query, setQuery] = useState(""),
     [edit, setEdit] = useState<RecordItem<NoteData> | "new" | null>(null),
     [color, setColor] = useState("violet"),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [allDates, setAllDates] = useState(false);
   const close = useCallback(() => setEdit(null), []);
   const filtered = notes
     .filter(
       (r) =>
+        (allDates ||
+          (r.data.repeatYearly
+            ? noteDay(r).slice(5) === selectedDate.slice(5)
+            : noteDay(r) === selectedDate)) &&
         (filter === "Todas" || r.data.category === filter) &&
         `${r.data.title} ${r.data.content}`
           .toLowerCase()
@@ -44,9 +56,14 @@ export function Notes() {
           category: String(f.get("category") || "Geral"),
           color,
           pinned: edit !== "new" && Boolean(edit?.data.pinned),
+          date: String(f.get("date")),
+          repeatYearly: f.get("repeatYearly") === "on",
         },
         edit !== "new" ? edit?.id : undefined,
       );
+      setFilter("Todas");
+      setQuery("");
+      if (!allDates) onSelectDate(String(f.get("date")));
       close();
     } catch {
     } finally {
@@ -55,10 +72,11 @@ export function Notes() {
   }
   return (
     <>
-      <Heading
-        title="Espaço para suas melhores ideias."
-        text="Insights, conversas e planos. Nada importante fica para trás."
-      >
+      <div className="panel-heading day-notes-heading">
+        <div>
+          <h2>📝 Anotações {allDates ? "de todas as datas" : "do dia"}</h2>
+          <p>Conversas, ideias e lembretes no seu calendário.</p>
+        </div>
         <button
           className="primary"
           onClick={() => {
@@ -68,7 +86,15 @@ export function Notes() {
         >
           ＋ Nova anotação
         </button>
-      </Heading>
+      </div>
+      <label className="calendar-check">
+        <input
+          type="checkbox"
+          checked={allDates}
+          onChange={(e) => setAllDates(e.target.checked)}
+        />{" "}
+        Buscar em todas as datas
+      </label>
       <div className="toolbar">
         <div className="tabs">
           {["Todas", ...new Set(notes.map((r) => r.data.category))].map((c) => (
@@ -90,8 +116,8 @@ export function Notes() {
       </div>
       {!filtered.length ? (
         <Empty
-          title="Dê espaço às suas ideias"
-          text="Crie uma anotação, escolha uma cor e organize por categoria."
+          title="Nenhuma anotação encontrada"
+          text="Anote uma conversa, uma ideia ou uma data importante para este dia."
         />
       ) : (
         <div className="notes-grid">
@@ -123,11 +149,26 @@ export function Notes() {
               <p>{row.data.content}</p>
               <div className="note-actions">
                 <span>
-                  {new Date(row.updatedAt).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "short",
-                  })}
+                  {new Date(`${noteDay(row)}T12:00:00`).toLocaleDateString(
+                    "pt-BR",
+                    {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    },
+                  )}
+                  {row.data.repeatYearly ? " · anual" : ""}
                 </span>
+                {allDates && (
+                  <button
+                    onClick={() => {
+                      onSelectDate(noteDay(row));
+                      setAllDates(false);
+                    }}
+                  >
+                    Ver dia
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setColor(row.data.color);
@@ -147,6 +188,25 @@ export function Notes() {
           close={close}
         >
           <form className="form-stack" onSubmit={submit}>
+            <label>
+              Dia da anotação
+              <input
+                type="date"
+                name="date"
+                min="1900-01-01"
+                max="2199-12-31"
+                required
+                defaultValue={edit === "new" ? selectedDate : noteDay(edit)}
+              />
+            </label>
+            <label className="calendar-check">
+              <input
+                type="checkbox"
+                name="repeatYearly"
+                defaultChecked={edit !== "new" && edit.data.repeatYearly}
+              />{" "}
+              Repetir todo ano (aniversário ou data local)
+            </label>
             <label>
               Título
               <input

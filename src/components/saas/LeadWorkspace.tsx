@@ -9,14 +9,31 @@ import {
   refreshRecords,
 } from "@/lib/records-client";
 import { Empty, Heading, Modal, money } from "./Shared";
+import { DealPayments, PaymentSummary } from "./DealPayments";
+import { paymentTotals, reais } from "@/lib/payment-plan";
+import { dateKey } from "@/lib/calendar-dates";
 
 export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
   const leads = useRecords<LeadData>("lead");
   const [query, setQuery] = useState(""),
+    [paymentRow, setPaymentRow] = useState<RecordItem<LeadData> | null>(null),
     [stage, setStage] = useState("Todos"),
     [edit, setEdit] = useState<RecordItem<LeadData> | "new" | null>(null),
     [busy, setBusy] = useState(false);
   const close = useCallback(() => setEdit(null), []);
+  const closePayments = useCallback(() => setPaymentRow(null), []);
+  const financial = leads.reduce(
+    (sum, row) => {
+      if (!row.data.paymentPlan) return sum;
+      const totals = paymentTotals(row.data.paymentPlan, dateKey(new Date()));
+      return {
+        received: sum.received + totals.received,
+        remaining: sum.remaining + totals.remaining,
+        overdue: sum.overdue + totals.overdue,
+      };
+    },
+    { received: 0, remaining: 0, overdue: 0 },
+  );
   const filtered = leads.filter(
     (r) =>
       `${r.data.name} ${r.data.email || ""} ${r.data.niche}`
@@ -112,6 +129,29 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
           ＋ Novo lead
         </button>
       </Heading>
+      {pipeline && (
+        <section
+          className="payment-totals pipeline-totals"
+          aria-label="Resumo de pagamentos"
+        >
+          <div>
+            <small>💚 Recebido dos clientes</small>
+            <strong>{reais(financial.received)}</strong>
+          </div>
+          <div>
+            <small>💜 Total a receber</small>
+            <strong>{reais(financial.remaining)}</strong>
+          </div>
+          <div>
+            <small>🧡 Parcelas em atraso</small>
+            <strong>{reais(financial.overdue)}</strong>
+          </div>
+          <p>
+            Marque um negócio como Ganho e abra Pagamentos para registrar o
+            acordo.
+          </p>
+        </section>
+      )}
       <div className="toolbar">
         <input
           aria-label="Buscar leads"
@@ -174,8 +214,21 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
                       {row.data.city || "Sem cidade"}
                     </p>
                     <span className="kanban-value">
-                      {money(row.data.value || 0)}
+                      {row.data.paymentPlan
+                        ? reais(row.data.paymentPlan.totalCents)
+                        : money(row.data.value || 0)}
                     </span>
+                    {row.data.paymentPlan && (
+                      <PaymentSummary plan={row.data.paymentPlan} />
+                    )}
+                    {(row.data.stage === "Ganho" || row.data.paymentPlan) && (
+                      <button
+                        className="secondary"
+                        onClick={() => setPaymentRow(row)}
+                      >
+                        💰 Pagamentos
+                      </button>
+                    )}
                     <select
                       aria-label={`Etapa de ${row.data.name}`}
                       value={row.data.stage || "Novo"}
@@ -247,6 +300,12 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
                     <td>
                       <div className="row-actions">
                         <button onClick={() => setEdit(row)}>Editar</button>
+                        {(row.data.stage === "Ganho" ||
+                          row.data.paymentPlan) && (
+                          <button onClick={() => setPaymentRow(row)}>
+                            Pagamentos
+                          </button>
+                        )}
                         <button onClick={() => void contact(row)}>
                           Contatei hoje
                         </button>
@@ -263,6 +322,13 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
             )}
           </div>
         </section>
+      )}
+      {paymentRow && (
+        <DealPayments
+          key={paymentRow.id}
+          row={paymentRow}
+          close={closePayments}
+        />
       )}
       {edit && (
         <Modal
@@ -320,6 +386,7 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
                 Valor potencial (R$)
                 <input
                   name="value"
+                  readOnly={edit !== "new" && Boolean(edit.data.paymentPlan)}
                   type="number"
                   min="0"
                   step="0.01"
