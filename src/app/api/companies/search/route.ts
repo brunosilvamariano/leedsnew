@@ -1,3 +1,6 @@
+import { currentUser } from "@/lib/access";
+import { canWrite } from "@/lib/billing";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { searchGooglePlaces } from "@/lib/google-places";
 
@@ -5,6 +8,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const user = await currentUser();
+  if (!user) return NextResponse.json({ok:false,message:"Entre para pesquisar."},{status:401});
+  if (!await canWrite(user)) return NextResponse.json({ok:false,message:"Ative sua assinatura em Meu plano para pesquisar."},{status:402});
   const params = request.nextUrl.searchParams;
   const query = params.get("q")?.trim() ?? "";
   const countryCode = params.get("country")?.trim().toUpperCase() || "BR";
@@ -18,6 +24,11 @@ export async function GET(request: NextRequest) {
   if (!process.env.GOOGLE_PLACES_API_KEY) return NextResponse.json({ ok: false, code: "GOOGLE_PLACES_API_KEY_NOT_CONFIGURED", message: "A busca real exige GOOGLE_PLACES_API_KEY no arquivo .env." }, { status: 503 });
 
   try {
+    const key = 'places:'+user.id+':'+new Date().toISOString().slice(0,10);
+    const cap = Number(process.env.SEARCH_DAILY_LIMIT || 20);
+    await prisma.rateLimit.upsert({where:{key},create:{key,count:0,lastRequest:BigInt(Date.now())},update:{}});
+    const quota=await prisma.rateLimit.updateMany({where:{key,count:{lt:cap}},data:{count:{increment:1},lastRequest:BigInt(Date.now())}});
+    if(!quota.count)return NextResponse.json({ok:false,message:"Você atingiu a cota diária de buscas. Tente amanhã."},{status:429});
     const startedAt = Date.now();
     const { companies, pagesFetched } = await searchGooglePlaces({ query, countryCode, countryName, region, city, limit });
     const durationMs = Date.now() - startedAt;

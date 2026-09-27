@@ -258,7 +258,7 @@ export function Explore() {
       setSearchMeta(payload.meta);
       setSearchMessage(payload.message ?? "Busca concluída");
 
-      storeLiveSearch({
+      await storeLiveSearch({
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         createdAt: new Date().toISOString(),
         query: appliedSearch.query,
@@ -283,14 +283,14 @@ export function Explore() {
     }
   };
 
-  const addLead = (company: Company) => {
-    addLeadCompany(company);
-    setLeadIds((current) => current.includes(company.id) ? current : [...current, company.id]);
+  const addLead = async (company: Company) => {
+    try { await addLeadCompany(company);
+    setLeadIds((current) => current.includes(company.id) ? current : [...current, company.id]); } catch {}
   };
 
-  const toggleFavorite = (company: Company) => {
-    const active = toggleFavoriteCompany(company);
-    setFavoriteIds((current) => active ? [...current.filter((id) => id !== company.id), company.id] : current.filter((id) => id !== company.id));
+  const toggleFavorite = async (company: Company) => {
+    try { const active = await toggleFavoriteCompany(company);
+    setFavoriteIds((current) => active ? [...current.filter((id) => id !== company.id), company.id] : current.filter((id) => id !== company.id)); } catch {}
   };
 
   const limitReached = searchMeta?.resultCount === searchMeta?.maxPerQuery;

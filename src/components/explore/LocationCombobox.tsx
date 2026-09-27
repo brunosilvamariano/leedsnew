@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import styles from "./Explore.module.css";
@@ -101,7 +102,7 @@ export function LocationCombobox({
           <span className={styles.comboSelection}>
             {selected?.badge && (
               <b className={styles.comboBadge}>
-                {selected.badge.startsWith("http") ? <img src={selected.badge} alt="" /> : selected.badge}
+                {selected.badge.startsWith("http") ? <Image src={selected.badge} alt="" width={24} height={16} unoptimized /> : selected.badge}
               </b>
             )}
             <span>{loading ? "Carregando..." : selected?.label || placeholder}</span>
@@ -139,7 +140,7 @@ export function LocationCombobox({
                     <span className={styles.comboOptionMain}>
                       {option.badge && (
                         <b className={styles.comboBadge}>
-                          {option.badge.startsWith("http") ? <img src={option.badge} alt="" /> : option.badge}
+                          {option.badge.startsWith("http") ? <Image src={option.badge} alt="" width={24} height={16} unoptimized /> : option.badge}
                         </b>
                       )}
                       <span>{option.label}</span>

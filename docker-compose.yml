@@ -1,21 +1,19 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: prospect-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: prospect
-      POSTGRES_PASSWORD: prospect
-      POSTGRES_DB: prospect
+      POSTGRES_USER: bizpeek
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Execute npm run setup:env}
+      POSTGRES_DB: bizpeek
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
-      - prospect_postgres_data:/var/lib/postgresql/data
+      - bizpeek_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prospect -d prospect"]
+      test: ["CMD-SHELL", "pg_isready -U bizpeek -d bizpeek"]
       interval: 5s
       timeout: 5s
       retries: 10
-
 volumes:
-  prospect_postgres_data:
+  bizpeek_postgres_data:

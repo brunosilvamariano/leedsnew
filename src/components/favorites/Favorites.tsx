@@ -1,13 +1,92 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import type { Company } from "@/data/companies";
-import { Icon } from "@/components/ui/Icon";
-import { readStoredCompanies, subscribeProspectData } from "@/lib/prospect-live-store";
-import styles from "./Favorites.module.css";
-
-export function Favorites(){
-  const [items,setItems]=useState<Company[]>([]);
-  useEffect(()=>{const load=()=>setItems(readStoredCompanies("favorites"));load();return subscribeProspectData(load)},[]);
-  return <section className={styles.page}><header><div><span>Seleção real</span><h1>Favoritos</h1><p>Empresas que você marcou durante suas pesquisas.</p></div><Link href="/explorar">Explorar empresas <Icon name="arrowUpRight"/></Link></header>{items.length?<div className={styles.list}>{items.slice().reverse().map(item=><article key={item.id}><span className={styles.avatar}>{item.initials}</span><div><strong>{item.name}</strong><small>{item.niche} · {item.city}, {item.state}{item.country ? ` · ${item.country}` : ""}</small></div><div className={styles.tags}>{item.instagram&&<span><Icon name="instagram"/>Instagram</span>}{item.whatsapp&&<span><Icon name="whatsapp"/>WhatsApp</span>}<span data-missing={!item.website}><Icon name="website"/>{item.website?"Website":"Sem site"}</span></div><b>{item.score}</b></article>)}</div>:<div className={styles.empty}><span><Icon name="star"/></span><h2>Nenhum favorito ainda</h2><p>Use a estrela em Explorar para salvar empresas reais e revisar depois.</p><Link href="/explorar">Encontrar empresas →</Link></div>}</section>
+import { useRecords, removeRecord } from "@/lib/records-client";
+import { addLeadCompany } from "@/lib/prospect-live-store";
+import { Empty, Heading } from "@/components/saas/Shared";
+export function Favorites() {
+  const items = useRecords<Company>("favorite"),
+    leads = useRecords<Company>("lead");
+  return (
+    <>
+      <Heading
+        title="Oportunidades para olhar com carinho."
+        text="Suas empresas favoritas, sempre por perto."
+      >
+        <Link className="primary" href="/explorar">
+          Explorar empresas ↗
+        </Link>
+      </Heading>
+      {!items.length ? (
+        <Empty
+          title="Guarde o que chamou sua atenção"
+          text="Marque uma empresa nos resultados de busca e ela aparecerá aqui."
+        />
+      ) : (
+        <section className="panel">
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>EMPRESA</th>
+                  <th>LOCALIZAÇÃO</th>
+                  <th>POTENCIAL</th>
+                  <th>AÇÕES</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...items].reverse().map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      <div className="lead-identity">
+                        <span className="company-avatar">
+                          {row.data.initials}
+                        </span>
+                        <div>
+                          <strong>{row.data.name}</strong>
+                          <small>{row.data.niche}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {row.data.city} · {row.data.state}
+                    </td>
+                    <td>
+                      <span className="status-badge">
+                        {row.data.score} pontos
+                      </span>
+                    </td>
+                    <td>
+                      <div className="row-actions">
+                        <button
+                          disabled={leads.some(
+                            (l) => l.data.id === row.data.id,
+                          )}
+                          onClick={() =>
+                            void addLeadCompany(row.data).catch(() => {})
+                          }
+                        >
+                          {leads.some((l) => l.data.id === row.data.id)
+                            ? "Já é um lead"
+                            : "＋ Adicionar lead"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm("Remover dos favoritos?"))
+                              void removeRecord(row.id).catch(() => {});
+                          }}
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+    </>
+  );
 }

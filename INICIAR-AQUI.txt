@@ -1,38 +1,14 @@
-PROSPECT v0.6.1 — BUSCA GLOBAL SIMPLIFICADA
+COMECE PELO README.md
 
-O arquivo .env já está preenchido nesta entrega.
-Não é necessário criar .env.local nem copiar .env.example.
+1. npm ci
+2. npm run setup:env
+3. docker compose up -d
+4. npm run db:deploy
+5. npm run dev
 
-1. No PowerShell, dentro da pasta do projeto:
+Crie sua conta na tela de cadastro.
+Depois: npm run admin -- seu-email@exemplo.com
 
-npm install
-npm run dev
-
-2. Abra:
-http://localhost:3000
-
-3. Em Explorar:
-- escolha um país;
-- escolha a região/estado quando houver;
-- escolha uma cidade;
-- pesquise o nicho.
-
-Fluxo de localização:
-PAÍS → REGIÃO/ESTADO → CIDADE
-
-O Prospect usa:
-- países/regiões/cidades: base mundial ODbL;
-- empresas: Google Places ao vivo.
-
-O bairro/sublocalidade ainda pode aparecer nos detalhes do endereço quando o Google informar esse dado, mas não existe mais filtro de bairro.
-
-BANCO LOCAL (quando necessário):
-docker compose up -d postgres
-
-VERIFICAÇÃO DE SEGURANÇA:
-npm audit
-npm audit --omit=dev
-
-IMPORTANTE:
-- O .env contém credenciais reais e está no .gitignore.
-- Não publique o .env nem este ZIP em repositórios públicos.
+O .env entregue é SOMENTE para avaliação local.
+Google, envio de e-mails e Stripe precisam das suas configurações.
+Plano comercial: R$ 50 por mês.

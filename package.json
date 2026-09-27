@@ -1,23 +1,31 @@
 {
-  "name": "prospect",
-  "version": "0.6.1",
+  "name": "bizpeek-saas",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint src",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "setup:env": "node scripts/setup-env.mjs",
+    "admin": "node --env-file=.env scripts/make-admin.mjs",
+    "test:security": "node --env-file=.env scripts/test-security.mjs",
+    "demo": "node --env-file=.env scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "better-auth": "^1.7.6",
     "next": "16.3.5",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "stripe": "^22.6.2",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -25,6 +33,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.3.5",
+    "prettier": "^3.9.9",
     "prisma": "^6.19.0",
     "typescript": "^5.7.0"
   },
@@ -32,6 +41,6 @@
     "deepmerge-ts": "8.0.2"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.0.0"
   }
 }

@@ -24,87 +24,56 @@ export type SearchHistoryMetric = Omit<SearchSnapshot, "companies"> & {
   averageScore: number;
 };
 
-const LAST_SEARCH_KEY = "prospect:last-live-search";
-const SEARCH_HISTORY_KEY = "prospect:live-search-history";
-const LEADS_KEY = "prospect:leads";
-const FAVORITES_KEY = "prospect:favorites";
-const EVENT = "prospect:data-updated";
-
-function safeParse<T>(raw: string | null, fallback: T): T {
-  if (!raw) return fallback;
-  try { return JSON.parse(raw) as T; } catch { return fallback; }
-}
-
-function emit() {
-  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(EVENT));
-}
-
-export function storeLiveSearch(snapshot: SearchSnapshot) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LAST_SEARCH_KEY, JSON.stringify(snapshot));
-
-  const metric: SearchHistoryMetric = {
-    id: snapshot.id,
-    createdAt: snapshot.createdAt,
-    query: snapshot.query,
-    state: snapshot.state,
-    regionName: snapshot.regionName,
-    countryCode: snapshot.countryCode,
-    countryName: snapshot.countryName,
-    city: snapshot.city,
-    neighborhood: snapshot.neighborhood,
-    resultCount: snapshot.resultCount,
-    pagesFetched: snapshot.pagesFetched,
-    durationMs: snapshot.durationMs,
-    noWebsite: snapshot.companies.filter((company) => !company.website).length,
-    instagram: snapshot.companies.filter((company) => Boolean(company.instagram)).length,
-    whatsapp: snapshot.companies.filter((company) => Boolean(company.whatsapp)).length,
-    highPotential: snapshot.companies.filter((company) => company.score >= 86).length,
-    averageScore: snapshot.companies.length ? Math.round(snapshot.companies.reduce((sum, company) => sum + company.score, 0) / snapshot.companies.length) : 0,
-  };
-
-  const history = safeParse<SearchHistoryMetric[]>(localStorage.getItem(SEARCH_HISTORY_KEY), []);
-  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify([...history.filter((item) => item.id !== metric.id), metric].slice(-36)));
-  emit();
-}
-
+import {
+  allRecords,
+  saveRecord,
+  removeRecord,
+  subscribeRecords,
+} from "./records-client";
 export function readLastSearch(): SearchSnapshot | null {
-  if (typeof window === "undefined") return null;
-  return safeParse<SearchSnapshot | null>(localStorage.getItem(LAST_SEARCH_KEY), null);
+  return (
+    (allRecords()
+      .filter((r) => r.kind === "search")
+      .at(-1)?.data as unknown as SearchSnapshot) || null
+  );
 }
-
 export function readSearchHistory(): SearchHistoryMetric[] {
-  if (typeof window === "undefined") return [];
-  return safeParse<SearchHistoryMetric[]>(localStorage.getItem(SEARCH_HISTORY_KEY), []);
+  return allRecords()
+    .filter((r) => r.kind === "search")
+    .map((r) => {
+      const s = r.data as unknown as SearchSnapshot;
+      return {
+        ...s,
+        noWebsite: s.companies.filter((c) => !c.website).length,
+        instagram: s.companies.filter((c) => c.instagram).length,
+        whatsapp: s.companies.filter((c) => c.whatsapp).length,
+        highPotential: s.companies.filter((c) => c.score >= 86).length,
+        averageScore: s.companies.length
+          ? Math.round(
+              s.companies.reduce((a, c) => a + c.score, 0) / s.companies.length,
+            )
+          : 0,
+      };
+    });
 }
-
 export function readStoredCompanies(key: "leads" | "favorites"): Company[] {
-  if (typeof window === "undefined") return [];
-  return safeParse<Company[]>(localStorage.getItem(key === "leads" ? LEADS_KEY : FAVORITES_KEY), []);
+  return allRecords()
+    .filter((r) => r.kind === (key === "leads" ? "lead" : "favorite"))
+    .map((r) => r.data as unknown as Company);
 }
-
-export function toggleFavoriteCompany(company: Company) {
-  if (typeof window === "undefined") return false;
-  const current = readStoredCompanies("favorites");
-  const exists = current.some((item) => item.id === company.id);
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(exists ? current.filter((item) => item.id !== company.id) : [...current, company]));
-  emit();
-  return !exists;
+export async function storeLiveSearch(snapshot: SearchSnapshot) {
+  await saveRecord("search", snapshot);
 }
-
-export function addLeadCompany(company: Company) {
-  if (typeof window === "undefined") return;
-  const current = readStoredCompanies("leads");
-  if (!current.some((item) => item.id === company.id)) localStorage.setItem(LEADS_KEY, JSON.stringify([...current, company]));
-  emit();
+export async function addLeadCompany(company: Company) {
+  if (!readStoredCompanies("leads").some((c) => c.id === company.id))
+    await saveRecord("lead", { ...company, stage: "Novo", value: 0 });
 }
-
-export function subscribeProspectData(listener: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener(EVENT, listener);
-  window.addEventListener("storage", listener);
-  return () => {
-    window.removeEventListener(EVENT, listener);
-    window.removeEventListener("storage", listener);
-  };
+export async function toggleFavoriteCompany(company: Company) {
+  const existing = allRecords().find(
+    (r) => r.kind === "favorite" && r.data.id === company.id,
+  );
+  if (existing) await removeRecord(existing.id);
+  else await saveRecord("favorite", company);
+  return !existing;
 }
+export const subscribeProspectData = subscribeRecords;

@@ -1,166 +1,252 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import styles from "./AppShell.module.css";
-
-const nav: { href: string; label: string; icon: IconName }[] = [
-  { href: "/dashboard", label: "Início", icon: "dashboard" },
-  { href: "/explorar", label: "Explorar", icon: "target" },
-  { href: "/leads", label: "Leads", icon: "lead" },
-  { href: "/pipeline", label: "Pipeline", icon: "pipeline" },
-  { href: "/favoritos", label: "Favoritos", icon: "star" },
-  { href: "/agenda", label: "Agenda", icon: "calendar" },
-  { href: "/configuracoes", label: "Configurações", icon: "settings" },
+import { authClient } from "@/lib/auth-client";
+import { refreshRecords } from "@/lib/records-client";
+import type { PublicUser } from "@/lib/crm-types";
+const UserContext = createContext<PublicUser | null>(null);
+export function useUser() {
+  return useContext(UserContext)!;
+}
+const navigation: [string, string, IconName][] = [
+  ["/dashboard", "Visão geral", "dashboard"],
+  ["/explorar", "Explorar empresas", "target"],
+  ["/leads", "Meus leads", "lead"],
+  ["/pipeline", "Pipeline", "pipeline"],
+  ["/agenda", "Calendário", "calendar"],
+  ["/anotacoes", "Anotações", "message"],
+  ["/favoritos", "Favoritos", "star"],
 ];
-
-export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (window.localStorage.getItem("prospect.session") !== "active") {
-      router.replace("/login");
-    }
-  }, [router]);
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setCommandOpen((value) => !value);
-      }
-      if (event.key === "Escape") setCommandOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
-    const onPointerDown = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, []);
-
-  const logout = () => {
-    window.localStorage.removeItem("prospect.session");
-    router.replace("/login");
-  };
-
-  const mobileItems = useMemo(() => nav.slice(0, 4), []);
-
+export function Avatar({
+  user,
+  size = 38,
+}: {
+  user: Pick<PublicUser, "name" | "image">;
+  size?: number;
+}) {
   return (
-    <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ""}`}>
-      <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
-        <div className={styles.brandRow}>
-          <Link href="/dashboard" className={styles.brand} aria-label="BizPeek">
-            <Image
-              className={styles.brandLogo}
-              src={collapsed ? "/logo/favicon.png" : "/logo/logo BizPeek.png"}
-              alt="BizPeek"
-              width={collapsed ? 34 : 165}
-              height={collapsed ? 34 : 50}
-              priority
-            />
-          </Link>
-          <button className={styles.collapse} onClick={() => setCollapsed((v) => !v)} aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>
-            <Icon name={collapsed ? "chevronRight" : "chevronLeft"}/>
-          </button>
-        </div>
-
-        <nav className={styles.nav} aria-label="Navegação principal">
-          {nav.map((item) => {
-            const active = pathname.startsWith(item.href);
-            return (
-              <Link key={item.href} href={item.href} className={`${styles.navItem} ${active ? styles.active : ""}`} title={collapsed ? item.label : undefined}>
-                <span className={styles.navIcon}><Icon name={item.icon}/></span>
-                <span className={styles.navLabel}>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className={styles.spacer}/>
-
-        <div className={styles.proCard}>
-          <div className={styles.proIcon}><Icon name="crown"/></div>
-          <strong>Encontre mais oportunidades.</strong>
-          <p>Use a busca global, filtros e dados reais para acelerar sua prospecção.</p>
-          <Link href="/explorar">Explorar agora <Icon name="arrowUpRight"/></Link>
-          <Image src="/brand/ice-mountain.svg" alt="" width={720} height={260} aria-hidden="true"/>
-        </div>
-      </aside>
-
-      <main className={styles.main}>
-        <header className={styles.header}>
-          <button className={styles.searchBox} onClick={() => setCommandOpen(true)}>
-            <Icon name="search"/>
-            <span>Buscar empresas, leads ou oportunidades...</span>
-            <kbd>⌘ K</kbd>
-          </button>
-          <div className={styles.headerActions}>
-            <button className={styles.notification} aria-label="Notificações"><Icon name="bell"/><i/></button>
-            <div className={styles.userMenuWrap} ref={userMenuRef}>
-              <button
-                className={styles.userMenu}
-                aria-label="Abrir menu do usuário"
-                aria-expanded={userOpen}
-                onClick={() => setUserOpen((current) => !current)}
-              >
-                <span className={styles.avatar}>BM</span>
-                <span className={styles.userText}><strong>Bruno</strong><small>Prospect</small></span>
-                <Icon name="chevronRight" className={`${styles.userChevron} ${userOpen ? styles.userChevronOpen : ""}`}/>
-              </button>
-              {userOpen && (
-                <div className={styles.userDropdown}>
-                  <div className={styles.userDropdownHeader}>
-                    <span className={styles.avatar}>BM</span>
-                    <div><strong>Bruno</strong><small>Conta Prospect</small></div>
-                  </div>
-                  <Link href="/configuracoes" className={styles.userDropdownItem} onClick={() => setUserOpen(false)}>
-                    <span><Icon name="settings"/></span>
-                    <div><strong>Configurações</strong><small>Conta e preferências</small></div>
-                    <Icon name="chevronRight"/>
-                  </Link>
-                  <button type="button" className={`${styles.userDropdownItem} ${styles.logoutItem}`} onClick={logout}>
-                    <span><Icon name="logout"/></span>
-                    <div><strong>Sair</strong><small>Encerrar esta sessão</small></div>
-                    <Icon name="chevronRight"/>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-        <div className={styles.content}>{children}</div>
-      </main>
-
-      <nav className={styles.mobileNav} aria-label="Navegação móvel">
-        {mobileItems.map((item) => <Link key={item.href} href={item.href} data-active={pathname.startsWith(item.href)}><Icon name={item.icon}/><span>{item.label}</span></Link>)}
-      </nav>
-
-      {commandOpen && (
-        <div className={styles.overlay} onMouseDown={() => setCommandOpen(false)}>
-          <div className={styles.commandPalette} onMouseDown={(e) => e.stopPropagation()}>
-            <div className={styles.commandSearch}><Icon name="search"/><input autoFocus placeholder="Buscar empresa, página ou ação..."/></div>
-            <div className={styles.commandSection}>
-              <span className={styles.commandLabel}>Navegação rápida</span>
-              {nav.slice(0, 6).map((item) => <Link href={item.href} key={item.href} className={styles.commandItem} onClick={() => setCommandOpen(false)}><Icon name={item.icon}/><span>{item.label}</span><Icon name="chevronRight"/></Link>)}
-            </div>
-          </div>
-        </div>
+    <span className="profile-avatar" style={{ width: size, height: size }}>
+      {user.image ? (
+        <Image
+          src={user.image}
+          alt={`Foto de ${user.name}`}
+          width={size}
+          height={size}
+          unoptimized
+        />
+      ) : (
+        user.name
+          .split(" ")
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase()
       )}
-    </div>
+    </span>
+  );
+}
+export function AppShell({
+  children,
+  user,
+  readOnly = false,
+}: {
+  children: React.ReactNode;
+  user: PublicUser;
+  readOnly?: boolean;
+}) {
+  const path = usePathname();
+  const [menu, setMenu] = useState(false),
+    [query, setQuery] = useState(""),
+    [message, setMessage] = useState(""),
+    [ready, setReady] = useState(false),
+    [failed, setFailed] = useState(false);
+  const load = () => {
+    setFailed(false);
+    refreshRecords()
+      .then(() => setReady(true))
+      .catch(() => setFailed(true));
+  };
+  useEffect(() => {
+    refreshRecords()
+      .then(() => setReady(true))
+      .catch(() => setFailed(true));
+    const notify = (e: Event) => setMessage((e as CustomEvent<string>).detail);
+    window.addEventListener("bizpeek:message", notify);
+    return () => window.removeEventListener("bizpeek:message", notify);
+  }, []);
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(""), 6500);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+  const links = [
+    ...navigation,
+    ["/assinatura", "Meu plano", "crown"] as [string, string, IconName],
+    ["/configuracoes", "Configurações", "settings"] as [
+      string,
+      string,
+      IconName,
+    ],
+    ...(user.role === "ADMIN"
+      ? [["/admin", "Administração", "globe"] as [string, string, IconName]]
+      : []),
+  ];
+  return (
+    <UserContext.Provider value={user}>
+      <div className="workspace">
+        {menu && (
+          <button
+            className="menu-backdrop"
+            aria-label="Fechar menu"
+            onClick={() => setMenu(false)}
+          />
+        )}
+        <aside className={`app-sidebar ${menu ? "is-open" : ""}`}>
+          <Link className="wordmark" href="/dashboard">
+            <span>✳</span> bizpeek<span className="wordmark-dot">.</span>
+          </Link>
+          <div className="workspace-label">
+            <span className="workspace-symbol">B</span>
+            <div>
+              <strong>Meu workspace</strong>
+              <small>Seu próximo negócio começa aqui</small>
+            </div>
+          </div>
+          <p className="nav-caption">WORKSPACE</p>
+          <nav aria-label="Navegação principal">
+            {links.map(([href, label, icon], i) => (
+              <Link
+                onClick={() => setMenu(false)}
+                key={href}
+                href={href}
+                className={`${path === href ? "selected" : ""} ${i === 7 ? "nav-separated" : ""}`}
+              >
+                <Icon name={icon} />
+                <span>{label}</span>
+                {href === "/anotacoes" && <i className="new-dot" />}
+              </Link>
+            ))}
+          </nav>
+          <div className="sidebar-tip">
+            <span>✦ MAIS FOCO. MAIS CONEXÕES.</span>
+            <strong>
+              Pequenas ações.
+              <br />
+              Grandes oportunidades.
+            </strong>
+            <Link href="/agenda">Organizar meu dia ↗</Link>
+          </div>
+          <button
+            className="sidebar-user"
+            onClick={async () => {
+              await authClient.signOut();
+              window.location.href = new URL(
+                "/login",
+                window.location.origin,
+              ).href;
+            }}
+          >
+            <Avatar user={user} />
+            <span>
+              <strong>{user.name}</strong>
+              <small>Sair da conta</small>
+            </span>
+            <Icon name="logout" />
+          </button>
+        </aside>
+        <main className="app-main">
+          <header className="app-topbar">
+            <button
+              className="icon-button mobile-menu"
+              aria-label="Abrir menu"
+              onClick={() => setMenu(true)}
+            >
+              ☰
+            </button>
+            <div className="breadcrumbs">
+              Workspace <span>/</span>{" "}
+              <strong>
+                {links.find(([href]) => path === href)?.[1] || "BizPeek"}
+              </strong>
+            </div>
+            <div className="topbar-right">
+              <div className="quick-search">
+                <Icon name="search" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Ir para uma página..."
+                  aria-label="Buscar página"
+                />
+                {query && (
+                  <div className="quick-results">
+                    {links
+                      .filter(([, label]) =>
+                        label.toLowerCase().includes(query.toLowerCase()),
+                      )
+                      .map(([href, label]) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={() => setQuery("")}
+                        >
+                          {label} ↗
+                        </Link>
+                      ))}
+                  </div>
+                )}
+              </div>
+              <Link
+                href="/agenda"
+                className="icon-button"
+                aria-label="Ver próximos compromissos"
+              >
+                <Icon name="calendar" />
+              </Link>
+              <Link href="/configuracoes">
+                <Avatar user={user} />
+              </Link>
+            </div>
+          </header>
+          <div className="app-content">
+            {readOnly && path !== "/assinatura" && (
+              <div className="plan-notice">
+                Seu workspace está em modo de leitura. Ative o Pro por R$ 50/mês
+                para continuar criando.{" "}
+                <Link href="/assinatura">Ver meu plano →</Link>
+              </div>
+            )}
+            {failed ? (
+              <div className="empty-state">
+                <h2>Não conseguimos carregar seus dados</h2>
+                <p>Confira a conexão com o banco e tente novamente.</p>
+                <button className="primary" onClick={load}>
+                  Tentar novamente
+                </button>
+              </div>
+            ) : ready ? (
+              children
+            ) : (
+              <div className="loading-state">
+                <span className="spinner" />
+                Preparando seu workspace…
+              </div>
+            )}
+          </div>
+        </main>
+        {message && (
+          <div className="toast" role="status">
+            {message}
+            <button aria-label="Fechar aviso" onClick={() => setMessage("")}>
+              ×
+            </button>
+          </div>
+        )}
+      </div>
+    </UserContext.Provider>
   );
 }
