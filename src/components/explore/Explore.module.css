@@ -1549,7 +1549,7 @@
   padding: 0 15px;
   border: 0;
   border-radius: 11px;
-  background: #1772e5;
+  background: #7760db;
   color: white;
   font-size: 12px;
   font-weight: 650;
@@ -1559,7 +1559,7 @@
 }
 
 .liveSearchButton:hover:not(:disabled) {
-  background: var(--brand-600);
+  background: #6550c4;
 }
 
 .liveSearchButton:disabled {
