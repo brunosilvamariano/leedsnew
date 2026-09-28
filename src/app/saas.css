@@ -86,11 +86,14 @@ p {
   object-fit: contain;
 }
 .favicon-mark {
+  position: absolute;
   display: none;
-  width: 30px;
-  height: 30px;
-  object-fit: cover;
-  transform: scale(1.45);
+  top: -5.1px;
+  left: -4.7px;
+  width: 36px;
+  height: 36px;
+  max-width: none;
+  object-fit: contain;
 }
 .sidebar-collapse {
   display: grid;
@@ -115,12 +118,12 @@ p {
   overflow-x: hidden;
 }
 .app-sidebar.is-collapsed .sidebar-brand-row {
-  gap: 2px;
+  gap: 0;
   justify-content: center;
 }
 .app-sidebar.is-collapsed .wordmark {
-  flex: 0 0 28px;
-  width: 28px;
+  flex: 0 0 27px;
+  width: 27px;
   height: 28px;
 }
 .app-sidebar.is-collapsed .brand-wordmark,
