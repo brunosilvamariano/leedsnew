@@ -989,9 +989,34 @@
   color: var(--text-secondary);
 }
 
+.contactIcon[data-icon="website"] {
+  background: #e9efff;
+  color: #496dc3;
+}
+
+.contactIcon[data-icon="instagram"] {
+  background: #fbeaf1;
+  color: #c13f78;
+}
+
+.contactIcon[data-icon="whatsapp"] {
+  background: #e6f5ec;
+  color: #208b5b;
+}
+
+.contactIcon[data-icon="phone"] {
+  background: #e7f3f1;
+  color: #397e75;
+}
+
+.contactIcon[data-icon="mail"] {
+  background: #f0ebf8;
+  color: #7758a6;
+}
+
 .contactIcon svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .contactRow small {
@@ -1683,9 +1708,21 @@
   background: var(--brand-50);
 }
 
+.mapsLinkContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mapsLink svg {
   width: 14px;
   height: 14px;
+}
+
+.mapsLink svg.mapsLogo {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 
 /* v0.6.1 — renderização progressiva */
