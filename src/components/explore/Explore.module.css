@@ -1197,7 +1197,7 @@
 
 .filterFooter button:last-child {
   border: 0;
-  background: #1772e5;
+  background: var(--brand-500);
   color: white;
   box-shadow: none;
 }
@@ -1559,7 +1559,7 @@
 }
 
 .liveSearchButton:hover:not(:disabled) {
-  background: #1469d0;
+  background: var(--brand-600);
 }
 
 .liveSearchButton:disabled {
