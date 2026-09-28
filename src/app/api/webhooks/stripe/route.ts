@@ -56,15 +56,24 @@ export async function POST(request: Request) {
         const current =
           relevant.find((s) => ["active", "trialing"].includes(s.status)) ||
           relevant.sort((a, b) => b.created - a.created)[0];
+        const periodEnd = current?.items.data.find(
+          (item) => item.price.id === process.env.STRIPE_PRICE_ID,
+        )?.current_period_end;
+        // The portal can set cancel_at without setting cancel_at_period_end.
+        // A cancellation after this period must not extend access already paid for.
+        const endsThisPeriod = Boolean(
+          current?.cancel_at && periodEnd && current.cancel_at <= periodEnd,
+        );
+        const accessEnd = periodEnd
+          ? Math.min(periodEnd, current?.cancel_at ?? periodEnd)
+          : null;
         await tx.subscription.update({
           where: { userId: owner.userId },
           data: {
             stripeId: current?.id || null,
             status: current?.status || "inactive",
-            cancelAtPeriodEnd: current?.cancel_at_period_end || false,
-            periodEnd: current?.items.data[0]?.current_period_end
-              ? new Date(current.items.data[0].current_period_end * 1000)
-              : null,
+            cancelAtPeriodEnd: current?.cancel_at_period_end || endsThisPeriod,
+            periodEnd: accessEnd ? new Date(accessEnd * 1000) : null,
           },
         });
       },
