@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useUser } from "@/components/layout/AppShell";
-import { Icon, type IconName } from "@/components/ui/Icon";
 import { useRecords, saveRecord } from "@/lib/records-client";
 import {
   stages,
@@ -11,6 +10,85 @@ import {
   type NoteData,
 } from "@/lib/crm-types";
 import { Heading, money } from "./Shared";
+type StatIconName = "leads" | "conversations" | "won" | "upcoming";
+
+function StatGlyph({ name }: { name: StatIconName }) {
+  const shared = {
+    viewBox: "0 0 24 24",
+    "aria-hidden": true as const,
+    focusable: false as const,
+  };
+
+  switch (name) {
+    case "leads":
+      return (
+        <svg {...shared}>
+          <circle cx="9" cy="8" r="3.2" fill="currentColor" />
+          <path
+            d="M3.4 19.5c.4-3.5 2.4-5.7 5.6-5.7s5.2 2.2 5.6 5.7"
+            fill="currentColor"
+            opacity=".72"
+          />
+          <path
+            d="M17 8h4m-2-2v4"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
+        </svg>
+      );
+    case "conversations":
+      return (
+        <svg {...shared}>
+          <path
+            d="M5.1 4.3h10.1a2 2 0 0 1 2 2v4.4a2 2 0 0 1-2 2h-2.3l-2.4 2v-2H5.1a2 2 0 0 1-2-2V6.3a2 2 0 0 1 2-2Z"
+            fill="currentColor"
+            opacity=".38"
+          />
+          <path
+            d="M8.1 9h10.2a2 2 0 0 1 2 2v4.8a2 2 0 0 1-2 2h-2.4l-2.5 2v-2H8.1a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2Z"
+            fill="currentColor"
+          />
+          <circle cx="10" cy="13.4" r=".8" fill="white" />
+          <circle cx="13.1" cy="13.4" r=".8" fill="white" />
+          <circle cx="16.2" cy="13.4" r=".8" fill="white" />
+        </svg>
+      );
+    case "won":
+      return (
+        <svg {...shared}>
+          <path
+            d="m7.8 14.5-.9 6 5.1-2.2 5.1 2.2-.9-6"
+            fill="currentColor"
+            opacity=".56"
+          />
+          <circle cx="12" cy="9.5" r="7.2" fill="currentColor" />
+          <path
+            d="m12 5.3 1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4L12 5.3Z"
+            fill="white"
+          />
+        </svg>
+      );
+    case "upcoming":
+      return (
+        <svg {...shared}>
+          <rect x="3.2" y="4.5" width="17.6" height="16" rx="3" fill="currentColor" />
+          <path d="M3.5 9h17" stroke="white" strokeOpacity=".62" strokeWidth="1.4" />
+          <path d="M8 3v4m8-4v4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+          <path
+            d="m7.7 14.1 2.5 2.5 5.7-5.5"
+            fill="none"
+            stroke="white"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+        </svg>
+      );
+  }
+}
+
 const colors = [
   "#b9a1da",
   "#a8c7e5",
@@ -34,31 +112,31 @@ export function Overview() {
     label: string;
     value: string;
     detail: string;
-    icon: IconName;
+    icon: StatIconName;
   }[] = [
     {
       label: "Leads na sua base",
       value: String(leads.length),
       detail: "Oportunidades para cultivar",
-      icon: "lead",
+      icon: "leads",
     },
     {
       label: "Conversas iniciadas",
       value: String(contacted.length),
       detail: "Relacionamentos em movimento",
-      icon: "message",
+      icon: "conversations",
     },
     {
       label: "Negócios conquistados",
       value: money(won.reduce((s, l) => s + (l.data.value || 0), 0)),
       detail: `${won.length} leads na etapa Ganho`,
-      icon: "chart",
+      icon: "won",
     },
     {
       label: "Próximos passos",
       value: String(pending.length),
       detail: "Compromissos para acompanhar",
-      icon: "calendar",
+      icon: "upcoming",
     },
   ];
   const months = Array.from({ length: range }, (_, i) => {
@@ -133,7 +211,7 @@ export function Overview() {
             <div className="stat-top">
               <span>{s.label}</span>
               <span className="stat-icon">
-                <Icon name={s.icon} />
+                <StatGlyph name={s.icon} />
               </span>
             </div>
             <strong className="stat-value">{s.value}</strong>
