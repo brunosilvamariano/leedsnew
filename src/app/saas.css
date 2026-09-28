@@ -1409,8 +1409,11 @@ p {
   color: #8e7e99;
   margin: 26px 0 7px;
 }
-.google-button b {
-  font-size: 19px;
+.google-button .google-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 .auth-divider {
   display: flex;
