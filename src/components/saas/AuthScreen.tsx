@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -83,7 +84,14 @@ export function AuthScreen({
     <main className="auth-layout">
       <section className="auth-story">
         <Link className="wordmark" href="/login">
-          <span>✳</span> bizpeek.
+          <Image
+            src="/logo/bizpeek-logo.png"
+            alt="BizPeek"
+            width={1254}
+            height={1254}
+            className="brand-wordmark"
+            priority
+          />
         </Link>
         <div>
           <span className="eyebrow">MENOS PLANILHAS. MAIS POSSIBILIDADES.</span>

@@ -8,9 +8,7 @@ export const metadata: Metadata = {
   },
   description: "Plataforma inteligente de prospecção e gestão de oportunidades.",
   icons: {
-    icon: "/logo/favicon.png",
-    shortcut: "/logo/favicon.png",
-    apple: "/logo/favicon.png",
+    icon: "/logo/bizpeek-favicon.png",
   },
 };
 

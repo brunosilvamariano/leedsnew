@@ -58,6 +58,7 @@ export function AppShell({
 }) {
   const path = usePathname();
   const [menu, setMenu] = useState(false),
+    [collapsed, setCollapsed] = useState(false),
     [query, setQuery] = useState(""),
     [message, setMessage] = useState(""),
     [ready, setReady] = useState(false),
@@ -104,10 +105,42 @@ export function AppShell({
             onClick={() => setMenu(false)}
           />
         )}
-        <aside className={`app-sidebar ${menu ? "is-open" : ""}`}>
-          <Link className="wordmark" href="/dashboard">
-            <span>✳</span> bizpeek<span className="wordmark-dot">.</span>
-          </Link>
+        <aside
+          className={`app-sidebar ${menu ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`}
+        >
+          <div className="sidebar-brand-row">
+            <Link
+              className="wordmark"
+              href="/dashboard"
+              aria-label="BizPeek - Visão geral"
+            >
+              <Image
+                src="/logo/bizpeek-logo.png"
+                alt=""
+                width={1254}
+                height={1254}
+                className="brand-wordmark"
+                priority
+              />
+              <Image
+                src="/logo/bizpeek-favicon.png"
+                alt=""
+                width={1254}
+                height={1254}
+                className="favicon-mark"
+              />
+            </Link>
+            <button
+              className="sidebar-collapse"
+              type="button"
+              aria-label={collapsed ? "Expandir sidebar" : "Recolher sidebar"}
+              aria-expanded={!collapsed}
+              aria-controls="workspace-navigation"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <Icon name={collapsed ? "chevronRight" : "chevronLeft"} />
+            </button>
+          </div>
           <div className="workspace-label">
             <span className="workspace-symbol">B</span>
             <div>
@@ -116,12 +149,13 @@ export function AppShell({
             </div>
           </div>
           <p className="nav-caption">WORKSPACE</p>
-          <nav aria-label="Navegação principal">
+          <nav id="workspace-navigation" aria-label="Navegação principal">
             {links.map(([href, label, icon]) => (
               <Link
                 onClick={() => setMenu(false)}
                 key={href}
                 href={href}
+                title={collapsed ? label : undefined}
                 className={`${path === href ? "selected" : ""} ${href === "/assinatura" ? "nav-separated" : ""}`}
               >
                 <Icon name={icon} />
@@ -140,6 +174,8 @@ export function AppShell({
           </div>
           <button
             className="sidebar-user"
+            aria-label="Sair da conta"
+            title={collapsed ? "Sair da conta" : undefined}
             onClick={async () => {
               await authClient.signOut();
               window.location.href = new URL(
