@@ -83,18 +83,19 @@ export function AppShell({
       return () => clearTimeout(timer);
     }
   }, [message]);
-  const links = [
-    ...navigation,
+  const accountLinks: [string, string, IconName][] = [
     ["/assinatura", "Meu plano", "crown"] as [string, string, IconName],
     ["/configuracoes", "Configurações", "settings"] as [
       string,
       string,
       IconName,
     ],
-    ...(user.role === "ADMIN"
-      ? [["/admin", "Administração", "globe"] as [string, string, IconName]]
-      : []),
   ];
+  const adminLinks: [string, string, IconName][] =
+    user.role === "ADMIN"
+      ? [["/admin", "Painel administrativo", "shield"]]
+      : [];
+  const links = [...navigation, ...accountLinks, ...adminLinks];
   return (
     <UserContext.Provider value={user}>
       <div className="workspace">
@@ -150,27 +151,54 @@ export function AppShell({
           </div>
           <p className="nav-caption">WORKSPACE</p>
           <nav id="workspace-navigation" aria-label="Navegação principal">
-            {links.map(([href, label, icon]) => (
+            {navigation.map(([href, label, icon]) => (
               <Link
                 onClick={() => setMenu(false)}
                 key={href}
                 href={href}
                 title={collapsed ? label : undefined}
-                className={`${path === href ? "selected" : ""} ${href === "/assinatura" ? "nav-separated" : ""}`}
+                className={path === href ? "selected" : ""}
               >
                 <Icon name={icon} />
                 <span>{label}</span>
               </Link>
             ))}
           </nav>
-          <div className="sidebar-tip">
-            <span>✦ MAIS FOCO. MAIS CONEXÕES.</span>
-            <strong>
-              Pequenas ações.
-              <br />
-              Grandes oportunidades.
-            </strong>
-            <Link href="/agenda">Organizar meu dia ↗</Link>
+          <div className="sidebar-management">
+            <p className="nav-caption">CONTA E GESTÃO</p>
+            <nav aria-label="Conta e gestão">
+              {accountLinks.map(([href, label, icon]) => (
+                <Link
+                  onClick={() => setMenu(false)}
+                  key={href}
+                  href={href}
+                  title={collapsed ? label : undefined}
+                  className={path === href ? "selected" : ""}
+                >
+                  <Icon name={icon} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </nav>
+            {adminLinks.length > 0 && (
+              <div className="sidebar-admin-group">
+                <p className="nav-caption">ADMINISTRAÇÃO</p>
+                <nav aria-label="Administração">
+                  {adminLinks.map(([href, label, icon]) => (
+                    <Link
+                      onClick={() => setMenu(false)}
+                      key={href}
+                      href={href}
+                      title={collapsed ? label : undefined}
+                      className={`${path === href ? "selected" : ""} admin-navigation-link`}
+                    >
+                      <Icon name={icon} />
+                      <span>{label}</span>
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+            )}
           </div>
           <button
             className="sidebar-user"
@@ -199,7 +227,7 @@ export function AppShell({
               aria-label="Abrir menu"
               onClick={() => setMenu(true)}
             >
-              ☰
+              <Icon name="menu" />
             </button>
             <div className="breadcrumbs">
               Workspace <span>/</span>{" "}
@@ -228,7 +256,7 @@ export function AppShell({
                           href={href}
                           onClick={() => setQuery("")}
                         >
-                          {label} ↗
+                          {label} <Icon name="arrowUpRight" />
                         </Link>
                       ))}
                   </div>

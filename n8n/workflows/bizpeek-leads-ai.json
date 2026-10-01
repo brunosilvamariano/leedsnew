@@ -1,0 +1,59 @@
+{
+  "name": "BizPeek — análise local de leads",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "bizpeek-leads-ai", "responseMode": "onReceived", "options": {} },
+      "id": "f1b750fc-893c-49a6-b9ed-aa1953c57e89",
+      "name": "Receber evento do BizPeek",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "bizpeek-leads-ai"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "event", "name": "event", "value": "={{ $json.body.event }}", "type": "string" },
+            { "id": "deliveryId", "name": "deliveryId", "value": "={{ $json.body.deliveryId }}", "type": "string" },
+            { "id": "lead", "name": "lead", "value": "={{ $json.body.record.data }}", "type": "object" },
+            { "id": "actor", "name": "actor", "value": "={{ $json.body.actor }}", "type": "object" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "64cba452-33c1-45f3-9968-df8bc7bd3f91",
+      "name": "Organizar dados do lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ model: 'qwen3:1.7b', prompt: '/no_think Você é um consultor comercial do BizPeek. Analise os dados públicos deste lead: ' + JSON.stringify($json.lead) + '. Responda em português, de forma curta, com: resumo da empresa, oportunidade identificada, abordagem inicial personalizada e próximo passo recomendado. Não invente informações ausentes.', stream: false }) }}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "9ca6c27c-9865-48a6-98bd-d120a84af89d",
+      "name": "Analisar lead com IA local",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {
+    "Receber evento do BizPeek": { "main": [[{ "node": "Organizar dados do lead", "type": "main", "index": 0 }]] },
+    "Organizar dados do lead": { "main": [[{ "node": "Analisar lead com IA local", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "36a66fc4-6029-49c7-aae6-71f1fd477854",
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": []
+}

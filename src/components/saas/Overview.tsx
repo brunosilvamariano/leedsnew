@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useUser } from "@/components/layout/AppShell";
 import { useRecords, saveRecord } from "@/lib/records-client";
+import { Icon, type IconName } from "@/components/ui/Icon";
 import {
   stages,
   type LeadData,
@@ -10,92 +11,14 @@ import {
   type NoteData,
 } from "@/lib/crm-types";
 import { Heading, money } from "./Shared";
-type StatIconName = "leads" | "conversations" | "won" | "upcoming";
-
-function StatGlyph({ name }: { name: StatIconName }) {
-  const shared = {
-    viewBox: "0 0 24 24",
-    "aria-hidden": true as const,
-    focusable: false as const,
-  };
-
-  switch (name) {
-    case "leads":
-      return (
-        <svg {...shared}>
-          <circle cx="9" cy="8" r="3.2" fill="currentColor" />
-          <path
-            d="M3.4 19.5c.4-3.5 2.4-5.7 5.6-5.7s5.2 2.2 5.6 5.7"
-            fill="currentColor"
-            opacity=".72"
-          />
-          <path
-            d="M17 8h4m-2-2v4"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.7"
-          />
-        </svg>
-      );
-    case "conversations":
-      return (
-        <svg {...shared}>
-          <path
-            d="M5.1 4.3h10.1a2 2 0 0 1 2 2v4.4a2 2 0 0 1-2 2h-2.3l-2.4 2v-2H5.1a2 2 0 0 1-2-2V6.3a2 2 0 0 1 2-2Z"
-            fill="currentColor"
-            opacity=".38"
-          />
-          <path
-            d="M8.1 9h10.2a2 2 0 0 1 2 2v4.8a2 2 0 0 1-2 2h-2.4l-2.5 2v-2H8.1a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2Z"
-            fill="currentColor"
-          />
-          <circle cx="10" cy="13.4" r=".8" fill="white" />
-          <circle cx="13.1" cy="13.4" r=".8" fill="white" />
-          <circle cx="16.2" cy="13.4" r=".8" fill="white" />
-        </svg>
-      );
-    case "won":
-      return (
-        <svg {...shared}>
-          <path
-            d="m7.8 14.5-.9 6 5.1-2.2 5.1 2.2-.9-6"
-            fill="currentColor"
-            opacity=".56"
-          />
-          <circle cx="12" cy="9.5" r="7.2" fill="currentColor" />
-          <path
-            d="m12 5.3 1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4L12 5.3Z"
-            fill="white"
-          />
-        </svg>
-      );
-    case "upcoming":
-      return (
-        <svg {...shared}>
-          <rect x="3.2" y="4.5" width="17.6" height="16" rx="3" fill="currentColor" />
-          <path d="M3.5 9h17" stroke="white" strokeOpacity=".62" strokeWidth="1.4" />
-          <path d="M8 3v4m8-4v4" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-          <path
-            d="m7.7 14.1 2.5 2.5 5.7-5.5"
-            fill="none"
-            stroke="white"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-        </svg>
-      );
-  }
-}
 
 const colors = [
-  "#b9a1da",
-  "#a8c7e5",
-  "#eed0ae",
-  "#ddb7cd",
-  "#abcdb6",
-  "#c9c4cd",
+  "#2f7df4",
+  "#4db9ff",
+  "#ffb84d",
+  "#f56fa1",
+  "#42c990",
+  "#9aa9bc",
 ];
 export function Overview() {
   const user = useUser(),
@@ -105,6 +28,12 @@ export function Overview() {
   const [range, setRange] = useState(6);
   const won = leads.filter((l) => l.data.stage === "Ganho"),
     contacted = leads.filter((l) => l.data.contactAt),
+    potential = leads
+      .filter((l) => l.data.stage !== "Perdido")
+      .reduce((sum, lead) => sum + (lead.data.value || 0), 0),
+    conversion = leads.length
+      ? Math.round((won.length / leads.length) * 100)
+      : 0,
     pending = events
       .filter((e) => !e.data.done)
       .sort((a, b) => a.data.date.localeCompare(b.data.date));
@@ -112,31 +41,43 @@ export function Overview() {
     label: string;
     value: string;
     detail: string;
-    icon: StatIconName;
+    trend: string;
+    icon: IconName;
+    accent: string;
   }[] = [
     {
-      label: "Leads na sua base",
+      label: "Leads ativos",
       value: String(leads.length),
       detail: "Oportunidades para cultivar",
-      icon: "leads",
+      trend: leads.length ? "Base ativa" : "Comece sua base",
+      icon: "users",
+      accent: "blue",
     },
     {
       label: "Conversas iniciadas",
       value: String(contacted.length),
       detail: "Relacionamentos em movimento",
-      icon: "conversations",
+      trend: contacted.length
+        ? `${Math.round((contacted.length / Math.max(1, leads.length)) * 100)}% da base`
+        : "Pronto para conectar",
+      icon: "messages",
+      accent: "cyan",
     },
     {
-      label: "Negócios conquistados",
-      value: money(won.reduce((s, l) => s + (l.data.value || 0), 0)),
-      detail: `${won.length} leads na etapa Ganho`,
-      icon: "won",
+      label: "Taxa de conversão",
+      value: `${conversion}%`,
+      detail: `${won.length} ${won.length === 1 ? "negócio conquistado" : "negócios conquistados"}`,
+      trend: leads.length ? "Conversão da base" : "Aguardando dados",
+      icon: "trophy",
+      accent: "green",
     },
     {
-      label: "Próximos passos",
-      value: String(pending.length),
-      detail: "Compromissos para acompanhar",
-      icon: "upcoming",
+      label: "Receita potencial",
+      value: money(potential),
+      detail: "Negócios ainda em andamento",
+      trend: potential ? "Potencial da carteira" : "Cadastre valores",
+      icon: "dollar",
+      accent: "amber",
     },
   ];
   const months = Array.from({ length: range }, (_, i) => {
@@ -153,12 +94,58 @@ export function Overview() {
         );
       }).length,
   );
-  const max = Math.max(4, ...values),
+  const contactedValues = months.map(
+    (d) =>
+      leads.filter((lead) => {
+        if (!lead.data.contactAt) return false;
+        const contactDate = new Date(lead.data.contactAt);
+        return (
+          contactDate.getMonth() === d.getMonth() &&
+          contactDate.getFullYear() === d.getFullYear()
+        );
+      }).length,
+  );
+  const max = Math.max(4, ...values, ...contactedValues),
     points = values.map((v, i) => ({
+      x: 30 + i * (540 / (range - 1)),
+      y: 170 - (v / max) * 140,
+    })),
+    contactedPoints = contactedValues.map((v, i) => ({
       x: 30 + i * (540 / (range - 1)),
       y: 170 - (v / max) * 140,
     }));
   const line = points.map((p, i) => `${i ? "L" : "M"}${p.x},${p.y}`).join(" ");
+  const contactedLine = contactedPoints
+    .map((p, i) => `${i ? "L" : "M"}${p.x},${p.y}`)
+    .join(" ");
+  const recentActivity = [
+    ...leads.map((row) => ({
+      id: `lead-${row.id}`,
+      title:
+        row.data.stage === "Ganho"
+          ? "Negócio conquistado"
+          : row.data.contactAt
+            ? "Conversa iniciada"
+            : "Novo lead adicionado",
+      detail: row.data.name,
+      date: row.updatedAt,
+      tone:
+        row.data.stage === "Ganho"
+          ? "green"
+          : row.data.contactAt
+            ? "cyan"
+            : "blue",
+    })),
+    ...notes.map((row) => ({
+      id: `note-${row.id}`,
+      title: "Anotação atualizada",
+      detail: row.data.title,
+      date: row.updatedAt,
+      tone: "amber",
+    })),
+  ]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5);
   let cursor = 0;
   const gradient = stages
     .map((s, i) => {
@@ -171,7 +158,7 @@ export function Overview() {
     })
     .join(",");
   return (
-    <>
+    <div className="overview-page">
       <Heading
         title={`Olá, ${user.name.split(" ")[0]}. Que bom ter você aqui!`}
         text="Uma visão clara do que importa para o seu negócio."
@@ -184,47 +171,44 @@ export function Overview() {
           })}
         </span>
         <Link className="primary" href="/leads">
-          ＋ Adicionar lead
+          <Icon name="plus" /> Adicionar lead
         </Link>
       </Heading>
-      <section className="welcome-banner">
-        <div>
-          <span className="eyebrow">UM NOVO DIA, NOVAS POSSIBILIDADES</span>
-          <h2>Boas conexões merecem atenção.</h2>
-          <p>
-            Organize suas oportunidades e dê o próximo passo.
-            <br />A próxima grande conquista pode começar com uma conversa.
-          </p>
-          <Link className="primary" href="/explorar">
-            Encontrar oportunidades <span>↗</span>
-          </Link>
-        </div>
-        <div className="banner-art" aria-hidden="true">
-          <div className="ring" />
-          <div className="cube" />
-          <span className="spark">✦</span>
-        </div>
-      </section>
       <section className="stat-grid">
         {stats.map((s) => (
-          <article className="stat-card" key={s.label}>
+          <article className="stat-card" data-accent={s.accent} key={s.label}>
             <div className="stat-top">
               <span>{s.label}</span>
               <span className="stat-icon">
-                <StatGlyph name={s.icon} />
+                <Icon name={s.icon} />
               </span>
             </div>
             <strong className="stat-value">{s.value}</strong>
-            <small>{s.detail}</small>
+            <div className="stat-foot">
+              <small>{s.detail}</small>
+              <span>{s.trend}</span>
+            </div>
+            <svg
+              className="stat-sparkline"
+              viewBox="0 0 180 34"
+              aria-hidden="true"
+            >
+              <path d="M2 29 C22 27, 27 19, 46 22 S72 31, 91 19 S117 22, 135 13 S157 15, 178 3" />
+            </svg>
           </article>
         ))}
       </section>
       <div className="dashboard-grid">
-        <section className="panel">
+        <section className="panel growth-panel">
           <div className="panel-heading">
-            <div>
-              <h2>Seu ritmo de crescimento</h2>
-              <p>Novos leads adicionados ao longo do tempo</p>
+            <div className="panel-heading-title">
+              <span className="panel-heading-icon" data-tone="blue">
+                <Icon name="chart" />
+              </span>
+              <div>
+                <h2>Crescimento de leads</h2>
+                <p>Novos leads adicionados ao longo do tempo</p>
+              </div>
             </div>
             <select
               aria-label="Período do gráfico"
@@ -241,12 +225,13 @@ export function Overview() {
             className="chart-svg"
             viewBox="0 0 600 205"
             role="img"
-            aria-label={`Leads por mês: ${months.map((d, i) => `${d.toLocaleDateString("pt-BR", { month: "short" })}: ${values[i]}`).join(", ")}`}
+            aria-label={`Leads e conversas por mês: ${months.map((d, i) => `${d.toLocaleDateString("pt-BR", { month: "short" })}: ${values[i]} leads e ${contactedValues[i]} conversas`).join(", ")}`}
           >
             <defs>
               <linearGradient id="leadFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#c8b6e7" stopOpacity=".48" />
-                <stop offset="1" stopColor="#c8b6e7" stopOpacity=".02" />
+                <stop offset="0" stopColor="#2f7df4" stopOpacity=".38" />
+                <stop offset=".62" stopColor="#70b8ff" stopOpacity=".13" />
+                <stop offset="1" stopColor="#d9ecff" stopOpacity=".02" />
               </linearGradient>
             </defs>
             {[0, 1, 2, 3, 4].map((v) => (
@@ -268,8 +253,15 @@ export function Overview() {
             <path
               d={line}
               fill="none"
-              stroke="#b499d9"
+              stroke="#2f7df4"
               strokeWidth="3"
+              strokeLinejoin="round"
+            />
+            <path
+              d={contactedLine}
+              fill="none"
+              stroke="#f3a348"
+              strokeWidth="2.5"
               strokeLinejoin="round"
             />
             {points.map((p, i) => (
@@ -279,7 +271,7 @@ export function Overview() {
                   cy={p.y}
                   r="4"
                   fill="white"
-                  stroke="#b499d9"
+                  stroke="#2f7df4"
                   strokeWidth="2"
                 >
                   <title>{values[i]} leads</title>
@@ -295,21 +287,44 @@ export function Overview() {
                 </text>
               </g>
             ))}
+            {contactedPoints.map((p, i) => (
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r="3.5"
+                fill="white"
+                stroke="#f3a348"
+                strokeWidth="2"
+                key={`contact-${i}`}
+              >
+                <title>{contactedValues[i]} conversas iniciadas</title>
+              </circle>
+            ))}
           </svg>
           <div className="chart-legend">
             <span>
               <i /> Leads adicionados
             </span>
-            <span>Dados reais do seu workspace</span>
+            <span className="conversation-legend">
+              <i /> Conversas iniciadas
+            </span>
+            <span className="chart-source">Dados reais do seu workspace</span>
           </div>
         </section>
-        <section className="panel">
+        <section className="panel pipeline-panel">
           <div className="panel-heading">
-            <div>
-              <h2>Oportunidades em movimento</h2>
-              <p>Distribuição por etapa do pipeline</p>
+            <div className="panel-heading-title">
+              <span className="panel-heading-icon" data-tone="cyan">
+                <Icon name="pipeline" />
+              </span>
+              <div>
+                <h2>Pipeline comercial</h2>
+                <p>Distribuição por etapa do pipeline</p>
+              </div>
             </div>
-            <Link href="/pipeline">Ver pipeline ↗</Link>
+            <Link href="/pipeline">
+              Ver pipeline <Icon name="arrowUpRight" />
+            </Link>
           </div>
           <div className="donut-wrap">
             <div
@@ -343,13 +358,63 @@ export function Overview() {
               : "Adicione seu primeiro lead para começar."}
           </div>
         </section>
-        <section className="panel">
+        <section className="panel activity-panel">
           <div className="panel-heading">
-            <div>
-              <h2>Suas conexões mais recentes</h2>
-              <p>Oportunidades que acabaram de chegar</p>
+            <div className="panel-heading-title">
+              <span className="panel-heading-icon" data-tone="green">
+                <Icon name="activity" />
+              </span>
+              <div>
+                <h2>Atividades recentes</h2>
+                <p>Últimos movimentos no seu workspace</p>
+              </div>
             </div>
-            <Link href="/leads">Ver todos ↗</Link>
+            <Link href="/leads">
+              Ver todas <Icon name="arrowUpRight" />
+            </Link>
+          </div>
+          <div className="activity-list">
+            {recentActivity.map((item) => (
+              <div
+                className="activity-item"
+                data-tone={item.tone}
+                key={item.id}
+              >
+                <span className="activity-dot" />
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.detail}</small>
+                </div>
+                <time>
+                  {new Date(item.date).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "short",
+                  })}
+                </time>
+              </div>
+            ))}
+            {!recentActivity.length && (
+              <div className="empty-inline">
+                Suas atividades aparecerão aqui conforme você movimentar seus
+                leads.
+              </div>
+            )}
+          </div>
+        </section>
+        <section className="panel opportunities-panel">
+          <div className="panel-heading">
+            <div className="panel-heading-title">
+              <span className="panel-heading-icon" data-tone="amber">
+                <Icon name="trophy" />
+              </span>
+              <div>
+                <h2>Oportunidades em destaque</h2>
+                <p>Relacionamentos que merecem atenção</p>
+              </div>
+            </div>
+            <Link href="/leads">
+              Ver todos <Icon name="arrowUpRight" />
+            </Link>
           </div>
           <div className="table-wrap">
             <table className="data-table">
@@ -401,13 +466,20 @@ export function Overview() {
             )}
           </div>
         </section>
-        <section className="panel">
+        <section className="panel tasks-panel">
           <div className="panel-heading">
-            <div>
-              <h2>Seus próximos passos</h2>
-              <p>Um pouco de atenção faz toda a diferença</p>
+            <div className="panel-heading-title">
+              <span className="panel-heading-icon" data-tone="violet">
+                <Icon name="checklist" />
+              </span>
+              <div>
+                <h2>Próximas tarefas</h2>
+                <p>Organize os contatos da sua agenda</p>
+              </div>
             </div>
-            <Link href="/agenda">Ver agenda ↗</Link>
+            <Link href="/agenda">
+              Ver agenda <Icon name="arrowUpRight" />
+            </Link>
           </div>
           {pending.slice(0, 5).map((row) => (
             <div className="task-row" key={row.id}>
@@ -445,13 +517,13 @@ export function Overview() {
             className="secondary"
             style={{ width: "100%", marginTop: 20 }}
           >
-            ＋ Planejar próximo contato
+            <Icon name="plus" /> Planejar próximo contato
           </Link>
           <div className="chart-legend">
             ✧ {notes.length} ideias guardadas nas suas anotações
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 }

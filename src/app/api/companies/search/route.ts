@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
       mode: "live",
       companies,
       meta: { resultCount: companies.length, pagesFetched, maxPerQuery: 60, durationMs, source: "Google Places (New)" },
-      message: `${companies.length} empresas reais retornadas em ${pagesFetched} página${pagesFetched === 1 ? "" : "s"}.`,
+      message: companies.length === 60
+        ? `Primeiros 60 resultados reais consultados em ${pagesFetched} páginas.`
+        : `${companies.length} empresas reais retornadas em ${pagesFetched} página${pagesFetched === 1 ? "" : "s"}.`,
     });
   } catch (error) {
     console.error("Places search failed", error);

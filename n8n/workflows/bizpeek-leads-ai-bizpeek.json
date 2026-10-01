@@ -1,0 +1,49 @@
+{
+  "name": "BizPeek — IA local integrada",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "bizpeek-leads-ai-v2", "responseMode": "onReceived", "options": {} },
+      "id": "80cc01ac-fb55-46ae-a077-8f01c3a1b45f", "name": "Receber lead do BizPeek", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [180, 300], "webhookId": "bizpeek-leads-ai-v2"
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "event", "name": "event", "value": "={{ $json.body.event }}", "type": "string" },
+        { "id": "deliveryId", "name": "deliveryId", "value": "={{ $json.body.deliveryId }}", "type": "string" },
+        { "id": "recordId", "name": "recordId", "value": "={{ $json.body.record.id }}", "type": "string" },
+        { "id": "lead", "name": "lead", "value": "={{ $json.body.record.data }}", "type": "object" }
+      ] }, "options": {} },
+      "id": "b4665d0b-2fe2-434b-956d-ab1051b80a23", "name": "Organizar dados do lead", "type": "n8n-nodes-base.set", "typeVersion": 3.4, "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST", "url": "http://ollama:11434/api/generate", "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true, "contentType": "raw", "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ model: 'qwen3:1.7b', prompt: '/no_think Analise este lead para prospecção comercial: ' + JSON.stringify($json.lead) + '. Use somente os dados fornecidos, não invente. Produza resumo, oportunidade, abordagem personalizada e próximo passo em português.', format: { type: 'object', properties: { summary: { type: 'string' }, opportunity: { type: 'string' }, approach: { type: 'string' }, nextStep: { type: 'string' } }, required: ['summary','opportunity','approach','nextStep'] }, stream: false }) }}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "dc80b852-da4a-4904-bbf9-48a64566cd00", "name": "Analisar com Ollama", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST", "url": "http://host.docker.internal:3001/api/integrations/n8n/analysis", "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Content-Type", "value": "application/json" },
+          { "name": "X-BizPeek-Secret", "value": "={{ $env.BIZPEEK_CALLBACK_SECRET }}" }
+        ] },
+        "sendBody": true, "contentType": "raw", "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ recordId: $('Organizar dados do lead').item.json.recordId, deliveryId: $('Organizar dados do lead').item.json.deliveryId, model: $json.model || 'qwen3:1.7b', analysis: $json.response }) }}",
+        "options": { "timeout": 15000 }
+      },
+      "id": "bc65bf95-7620-4cb9-aabd-c72ad072b809", "name": "Salvar análise no BizPeek", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [940, 300]
+    }
+  ],
+  "connections": {
+    "Receber lead do BizPeek": { "main": [[{ "node": "Organizar dados do lead", "type": "main", "index": 0 }]] },
+    "Organizar dados do lead": { "main": [[{ "node": "Analisar com Ollama", "type": "main", "index": 0 }]] },
+    "Analisar com Ollama": { "main": [[{ "node": "Salvar análise no BizPeek", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "b44bcb58-e969-4dbc-817a-0a07f77f9590", "meta": { "templateCredsSetupCompleted": true }, "tags": []
+}

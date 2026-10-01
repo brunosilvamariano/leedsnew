@@ -39,6 +39,13 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) =>
       sendMail(user.email, "Confirme seu e-mail no BizPeek", url),
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      requireLocalEmailVerified: false,
+    },
+  },
   socialProviders:
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? {

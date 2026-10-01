@@ -6,6 +6,7 @@ import { currentUser, validOrigin } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { stages } from "@/lib/crm-types";
 import { daySchema, paymentPlanSchema } from "@/lib/payment-plan";
+import { deliverN8nEvent } from "@/lib/n8n";
 
 const text = z.string().max(10000);
 const company = z
@@ -154,16 +155,21 @@ export async function POST(request: Request) {
           { status: 404 },
         );
       await recordCompletedContact();
-      return NextResponse.json(
-        await prisma.workspaceRecord.findFirst({
+      const updated = await prisma.workspaceRecord.findFirst({
           where: { id: body.id, userId: user.id },
-        }),
-      );
+        });
+      if (body.kind === "lead" && updated) {
+        await deliverN8nEvent("lead.updated", user, updated);
+      }
+      return NextResponse.json(updated);
     }
     const created = await prisma.workspaceRecord.create({
       data: { userId: user.id, kind: body.kind, data },
     });
     await recordCompletedContact();
+    if (body.kind === "lead") {
+      await deliverN8nEvent("lead.created", user, created);
+    }
     return NextResponse.json(created, { status: 201 });
   } catch {
     return NextResponse.json(

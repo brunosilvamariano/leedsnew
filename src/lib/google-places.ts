@@ -57,23 +57,54 @@ function placeLocation(place: GooglePlace) {
   };
 }
 
+function isOwnedWebsite(url?: string) {
+  if (!url) return false;
+  return !/(instagram\.com|facebook\.com|wa\.me|whatsapp\.com|linktr\.ee|beacons\.ai)/i.test(url);
+}
+
 function opportunityScore(place: GooglePlace, signals: WebsiteSignals) {
-  let score = 32;
-  if (!place.websiteUri) score += 28;
-  if (signals.instagram) score += 12;
-  if (signals.whatsapp) score += 14;
-  if (place.nationalPhoneNumber || place.internationalPhoneNumber) score += 6;
+  const phone = Boolean(place.nationalPhoneNumber || place.internationalPhoneNumber);
+  const website = isOwnedWebsite(place.websiteUri);
+  let score = 20;
+
+  // Potencial mede a oportunidade de melhoria digital. Canais de contato
+  // aumentam a viabilidade da abordagem, mas não transformam maturidade em necessidade.
+  if (!website) score += 35;
+  if (!signals.instagram) score += 12;
+  if (!signals.whatsapp) score += 8;
+  if (!signals.email) score += 8;
+  if (phone) score += 8;
+  if (signals.whatsapp) score += 6;
+  if (signals.email) score += 4;
+  if (signals.instagram) score += 2;
   if (place.businessStatus === "OPERATIONAL") score += 4;
   if ((place.userRatingCount ?? 0) >= 10) score += 2;
-  if ((place.userRatingCount ?? 0) >= 50) score += 1;
   if ((place.rating ?? 0) >= 4.2) score += 1;
-  return Math.min(99, score);
+
+  const hasDirectContact = phone || Boolean(signals.whatsapp || signals.email || signals.instagram);
+  if (!hasDirectContact) score -= 25;
+  return Math.max(0, Math.min(99, score));
 }
 
 function scoreLabel(score: number): Company["status"] {
-  if (score >= 86) return "Alto potencial";
-  if (score >= 68) return "Bom potencial";
-  return "Médio";
+  if (score >= 80) return "Alto potencial";
+  if (score >= 60) return "Médio potencial";
+  return "Baixo potencial";
+}
+
+function contactabilityScore(place: GooglePlace, signals: WebsiteSignals) {
+  let score = 0;
+  if (place.nationalPhoneNumber || place.internationalPhoneNumber) score += 30;
+  if (signals.whatsapp) score += 30;
+  if (signals.email) score += 25;
+  if (signals.instagram) score += 15;
+  return Math.min(100, score);
+}
+
+function contactabilityLabel(score: number): NonNullable<Company["contactStatus"]> {
+  if (score >= 60) return "Contato fácil";
+  if (score >= 30) return "Contato moderado";
+  return "Contato limitado";
 }
 
 function readableType(place: GooglePlace, fallback: string) {
@@ -173,10 +204,13 @@ export async function searchGooglePlaces({
     const name = place.displayName?.text?.trim() || `Empresa ${index + 1}`;
     const actual = placeLocation(place);
     const score = opportunityScore(place, signals);
+    const contactScore = contactabilityScore(place, signals);
+    const ownedWebsite = isOwnedWebsite(place.websiteUri);
     const reasons = [
-      !place.websiteUri ? "Nenhum website encontrado" : "Website encontrado",
-      signals.instagram ? "Instagram encontrado no website" : undefined,
-      signals.whatsapp ? "WhatsApp encontrado no website" : undefined,
+      !ownedWebsite ? "Sem website próprio" : undefined,
+      !signals.instagram ? "Instagram não identificado" : undefined,
+      !signals.whatsapp ? "WhatsApp não identificado" : undefined,
+      !signals.email ? "E-mail não identificado" : undefined,
       place.nationalPhoneNumber || place.internationalPhoneNumber ? "Telefone público disponível" : undefined,
       place.businessStatus === "OPERATIONAL" ? "Estabelecimento marcado como operacional" : undefined,
       typeof place.rating === "number" ? `Avaliação ${place.rating.toFixed(1)} no Google` : undefined,
@@ -196,13 +230,16 @@ export async function searchGooglePlaces({
       country: actual.country !== "—" ? actual.country : countryName,
       countryCode: actual.countryCode || countryCode,
       address: place.formattedAddress || [city, region, countryName].filter(Boolean).join(" - ") || countryName,
-      website: place.websiteUri,
+      website: ownedWebsite ? place.websiteUri : undefined,
       instagram: signals.instagram,
       whatsapp: signals.whatsapp,
       phone: place.internationalPhoneNumber || place.nationalPhoneNumber,
       email: signals.email,
       score,
       status: scoreLabel(score),
+      scoreVersion: 2,
+      contactScore,
+      contactStatus: contactabilityLabel(contactScore),
       updatedAt: "Agora",
       source: "Google Places · consulta ao vivo",
       reasons,

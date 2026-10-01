@@ -17,7 +17,10 @@ export type Company = {
   phone?: string;
   email?: string;
   score: number;
-  status: "Alto potencial" | "Bom potencial" | "Médio";
+  status: "Alto potencial" | "Médio potencial" | "Baixo potencial";
+  scoreVersion?: number;
+  contactScore?: number;
+  contactStatus?: "Contato fácil" | "Contato moderado" | "Contato limitado";
   updatedAt: string;
   source: string;
   reasons: string[];

@@ -15,6 +15,14 @@ export type LeadData = Company & {
   contactAt?: string;
   description?: string;
   paymentPlan?: PaymentPlan;
+  aiAnalysis?: {
+    summary: string;
+    opportunity: string;
+    approach: string;
+    nextStep: string;
+    model: string;
+    completedAt: string;
+  };
 };
 export type NoteData = {
   title: string;
