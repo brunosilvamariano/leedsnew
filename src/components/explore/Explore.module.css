@@ -3091,12 +3091,10 @@
     height: auto;
     min-height: 0;
     max-height: none;
-    overflow-x: auto;
-    overflow-y: visible;
+    overflow: visible;
     padding-right: 8px;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
+    overscroll-behavior: auto;
+    touch-action: pan-y;
   }
 
   .companyList,
@@ -3119,6 +3117,7 @@
     grid-template-columns: minmax(0, 1fr) 64px;
     gap: 8px;
     padding: 13px 42px 13px 11px;
+    touch-action: pan-y;
   }
 
   .scoreBox {
@@ -3140,6 +3139,7 @@
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x pan-y;
