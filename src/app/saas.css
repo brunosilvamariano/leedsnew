@@ -4054,3 +4054,38 @@ body {
 .lead-ai-analysis header{display:flex;align-items:center;gap:11px;margin-bottom:14px}.lead-ai-analysis header>span{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#1677ff,#5b5cf0);color:#fff;font-size:18px;box-shadow:0 8px 20px rgba(22,119,255,.22)}
 .lead-ai-analysis header div{min-width:0;flex:1}.lead-ai-analysis header small,.lead-ai-grid small{display:block;color:#316cc5;font-size:9px;font-weight:750;letter-spacing:.1em}.lead-ai-analysis h3{margin:3px 0 0;color:#10233f;font-size:16px}.lead-ai-analysis time{color:#68809f;font-size:10px}.lead-ai-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lead-ai-grid article{padding:13px;border:1px solid rgba(178,201,232,.72);border-radius:13px;background:rgba(255,255,255,.78)}.lead-ai-grid p{margin:6px 0 0;color:#354d6b;font-size:11px;line-height:1.55;white-space:pre-wrap}
 @media(max-width:680px){.lead-ai-analysis{padding:14px}.lead-ai-analysis header{align-items:flex-start}.lead-ai-analysis time{display:none}.lead-ai-grid{grid-template-columns:1fr}}
+
+/* Auditoria responsiva: diálogos devem caber no viewport móvel e continuar
+   roláveis mesmo com o teclado virtual aberto. */
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 10px 0 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 10px);
+    padding: 20px 15px max(18px, env(safe-area-inset-bottom));
+    border-radius: 18px 18px 0 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-title {
+    position: sticky;
+    top: -20px;
+    z-index: 2;
+    margin: -20px -15px 18px;
+    padding: 18px 15px 12px;
+    background: #fff;
+  }
+
+  .modal-title button,
+  .form-stack input,
+  .form-stack select,
+  .form-stack textarea {
+    min-height: 44px;
+  }
+}

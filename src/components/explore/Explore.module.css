@@ -3081,3 +3081,67 @@
     display: none;
   }
 }
+
+/* Mobile integrity: result cards stay inside the viewport and touch scrolling
+   remains available for the wide table view. */
+@media (max-width: 700px) {
+  .resultsViewport {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-right: 8px;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  .companyList,
+  .companyCard,
+  .companyOpen,
+  .companyIdentity,
+  .companyText,
+  .scoreBox,
+  .scoreCopy {
+    min-width: 0;
+  }
+
+  .companyList,
+  .companyCard,
+  .companyOpen {
+    width: 100%;
+  }
+
+  .companyOpen {
+    grid-template-columns: minmax(0, 1fr) 64px;
+    gap: 8px;
+    padding: 13px 42px 13px 11px;
+  }
+
+  .scoreBox {
+    width: 64px;
+    justify-self: end;
+    padding-left: 4px;
+  }
+
+  .scoreCopy {
+    display: none;
+  }
+
+  .companyText > span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .tableWrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+}

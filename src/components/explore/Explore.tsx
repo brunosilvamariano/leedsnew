@@ -201,7 +201,9 @@ export function Explore() {
       setRegionCode(previous.state || "");
       setCity(previous.city);
       setLiveCompanies(previous.companies);
-      setSelected(previous.companies[0] ?? null);
+      // Restoring a search must show the result list first. On small screens
+      // the details panel occupies the viewport and hides the other results.
+      setSelected(null);
       setApplied({
         query: previous.query,
         countryCode: previous.countryCode || "BR",
@@ -400,7 +402,8 @@ export function Explore() {
         city,
       };
       setLiveCompanies(companies);
-      setSelected(companies[0] ?? null);
+      // Details open only after an explicit click/tap on a company.
+      setSelected(null);
       setApplied(appliedSearch);
       setSearchStatus("live");
       setSearchMeta(payload.meta);
@@ -465,7 +468,8 @@ export function Explore() {
   const goToPage = (page: number) => {
     const nextPage = Math.min(totalPages, Math.max(1, page));
     setCurrentPage(nextPage);
-    setSelected(filtered[(nextPage - 1) * pageSize] ?? null);
+    // Changing page must not open the first company automatically.
+    setSelected(null);
     resultsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
