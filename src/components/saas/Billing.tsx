@@ -9,6 +9,9 @@ type Plan = {
   enabled: boolean;
   configured: boolean;
   admin: boolean;
+  manualTrialStatus: "none" | "scheduled" | "active" | "expired";
+  manualTrialStartsAt?: string;
+  manualTrialEndsAt?: string;
 };
 const labels: Record<string, string> = {
   inactive: "Ainda não assinante",
@@ -64,6 +67,14 @@ export function Billing() {
       setBusy(false);
     }
   }
+  const manualTrialMessage =
+    plan?.manualTrialStartsAt && plan.manualTrialEndsAt
+      ? plan.manualTrialStatus === "active"
+        ? `Teste gratuito ativo de ${new Date(plan.manualTrialStartsAt).toLocaleString("pt-BR")} até ${new Date(plan.manualTrialEndsAt).toLocaleString("pt-BR")}.`
+        : plan.manualTrialStatus === "scheduled"
+          ? `Teste gratuito agendado para começar em ${new Date(plan.manualTrialStartsAt).toLocaleString("pt-BR")} e terminar em ${new Date(plan.manualTrialEndsAt).toLocaleString("pt-BR")}.`
+          : `Seu teste gratuito terminou em ${new Date(plan.manualTrialEndsAt).toLocaleString("pt-BR")}.`
+      : null;
   return (
     <>
       <Heading
@@ -90,14 +101,15 @@ export function Billing() {
           <li>Busca de empresas, sujeita à cota diária do plano</li>
         </ul>
         <div className="form-message" style={{ marginBottom: 20 }}>
-          {plan
-            ? plan.admin
-              ? "Conta administrativa — acesso de proprietário."
-              : !plan.enabled
-                ? "Ambiente de avaliação: cobrança desativada."
-                : labels[plan.status] || plan.status
-            : "Consultando seu plano…"}
-          {plan?.periodEnd && (
+          {manualTrialMessage ||
+            (plan
+              ? plan.admin
+                ? "Conta administrativa — acesso de proprietário."
+                : !plan.enabled
+                  ? "Ambiente de avaliação: cobrança desativada."
+                  : labels[plan.status] || plan.status
+              : "Consultando seu plano…")}
+          {!manualTrialMessage && plan?.periodEnd && (
             <>
               <br />
               {plan.cancelAtPeriodEnd

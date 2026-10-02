@@ -51,10 +51,16 @@ export function AppShell({
   children,
   user,
   readOnly = false,
+  trial,
 }: {
   children: React.ReactNode;
   user: PublicUser;
   readOnly?: boolean;
+  trial?: {
+    startsAt: string;
+    endsAt: string;
+    status: "scheduled" | "active" | "expired";
+  };
 }) {
   const path = usePathname();
   const [menu, setMenu] = useState(false),
@@ -275,6 +281,27 @@ export function AppShell({
             </div>
           </header>
           <div className="app-content">
+            {trial?.status === "active" && (
+              <div className="trial-notice">
+                <strong>Teste gratuito ativo</strong>
+                <span>
+                  Seu acesso completo está liberado até{" "}
+                  {new Date(trial.endsAt).toLocaleString("pt-BR")}.
+                </span>
+                <Link href="/assinatura">Ver detalhes →</Link>
+              </div>
+            )}
+            {trial?.status === "scheduled" && (
+              <div className="trial-notice is-scheduled">
+                <strong>Teste gratuito agendado</strong>
+                <span>
+                  O acesso começa em{" "}
+                  {new Date(trial.startsAt).toLocaleString("pt-BR")} e termina
+                  em {new Date(trial.endsAt).toLocaleString("pt-BR")}.
+                </span>
+                <Link href="/assinatura">Ver detalhes →</Link>
+              </div>
+            )}
             {readOnly && path !== "/assinatura" && (
               <div className="plan-notice">
                 Seu workspace está em modo de leitura. Ative o Pro por R$ 50/mês

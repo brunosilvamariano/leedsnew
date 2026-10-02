@@ -233,7 +233,9 @@ export function Admin() {
                             className="secondary"
                             onClick={() => openTrial(u)}
                           >
-                            Teste gratuito
+                            {u.trialStartsAt && u.trialEndsAt
+                              ? "Editar teste"
+                              : "Teste gratuito"}
                           </button>
                         )}
                         {u.role !== "ADMIN" && (

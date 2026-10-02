@@ -12,6 +12,15 @@ export async function GET() {
   const sub = await prisma.subscription.findUnique({
     where: { userId: user.id },
   });
+  const now = new Date();
+  const manualTrialStatus =
+    user.trialStartsAt && user.trialEndsAt
+      ? user.trialStartsAt > now
+        ? "scheduled"
+        : user.trialEndsAt > now
+          ? "active"
+          : "expired"
+      : "none";
   return NextResponse.json({
     status: sub?.status || "inactive",
     periodEnd: sub?.periodEnd,
@@ -24,6 +33,9 @@ export async function GET() {
       process.env.STRIPE_WEBHOOK_SECRET,
     ),
     admin: user.role === "ADMIN",
+    manualTrialStatus,
+    manualTrialStartsAt: user.trialStartsAt,
+    manualTrialEndsAt: user.trialEndsAt,
   });
 }
 export async function POST(request: Request) {
