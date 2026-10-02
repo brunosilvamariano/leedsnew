@@ -118,6 +118,8 @@ model User {
   image String?
   role String @default("USER")
   suspended Boolean @default(false)
+  trialStartsAt DateTime?
+  trialEndsAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sessions Session[]

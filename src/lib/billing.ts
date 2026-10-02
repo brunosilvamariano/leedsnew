@@ -8,6 +8,18 @@ export function stripeClient() {
 export async function canWrite(user: { id: string; role: string }) {
   if (user.role === "ADMIN" || process.env.BILLING_ENABLED === "false")
     return true;
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { trialStartsAt: true, trialEndsAt: true },
+  });
+  const now = new Date();
+  if (
+    account?.trialStartsAt &&
+    account.trialEndsAt &&
+    account.trialStartsAt <= now &&
+    account.trialEndsAt > now
+  )
+    return true;
   const subscription = await prisma.subscription.findUnique({
     where: { userId: user.id },
   });
