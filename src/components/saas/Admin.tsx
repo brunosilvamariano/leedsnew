@@ -21,6 +21,199 @@ type Data = {
   integrations: Record<string, boolean>;
   billing: boolean;
 };
+const monthNames = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
+const weekDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
+function inputDate(date: Date) {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+}
+function DateTimePicker({
+  label,
+  value,
+  onChange,
+  minimum,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  minimum?: string;
+}) {
+  const selected = value ? new Date(value) : null;
+  const [open, setOpen] = useState(false);
+  const [view, setView] = useState(
+    () => selected || (minimum ? new Date(minimum) : new Date()),
+  );
+  const first = new Date(view.getFullYear(), view.getMonth(), 1);
+  const offset = (first.getDay() + 6) % 7;
+  const days = Array.from(
+    { length: 42 },
+    (_, index) =>
+      new Date(view.getFullYear(), view.getMonth(), index - offset + 1),
+  );
+  function choose(day: Date) {
+    const next = new Date(day);
+    next.setHours(selected?.getHours() ?? 9, selected?.getMinutes() ?? 0, 0, 0);
+    onChange(inputDate(next));
+  }
+  function setTime(part: "hour" | "minute", nextValue: number) {
+    const next = selected ? new Date(selected) : new Date();
+    if (part === "hour") next.setHours(nextValue);
+    else next.setMinutes(nextValue);
+    next.setSeconds(0, 0);
+    onChange(inputDate(next));
+  }
+  const minimumDay = minimum ? new Date(minimum) : null;
+  return (
+    <div className="date-time-field">
+      <span>{label}</span>
+      <button
+        type="button"
+        className={`date-time-trigger ${open ? "is-open" : ""}`}
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <span>
+          <strong>
+            {selected ? selected.toLocaleDateString("pt-BR") : "Escolher data"}
+          </strong>
+          <small>
+            {selected
+              ? selected.toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Selecione também o horário"}
+          </small>
+        </span>
+        <span className="calendar-symbol" aria-hidden="true">
+          ▦
+        </span>
+      </button>
+      {open && (
+        <div className="date-time-popover">
+          <div className="calendar-heading">
+            <button
+              type="button"
+              aria-label="Mês anterior"
+              onClick={() =>
+                setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))
+              }
+            >
+              ‹
+            </button>
+            <strong>
+              {monthNames[view.getMonth()]} <span>{view.getFullYear()}</span>
+            </strong>
+            <button
+              type="button"
+              aria-label="Próximo mês"
+              onClick={() =>
+                setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))
+              }
+            >
+              ›
+            </button>
+          </div>
+          <div className="calendar-weekdays">
+            {weekDays.map((day) => (
+              <span key={day}>{day}</span>
+            ))}
+          </div>
+          <div className="calendar-days">
+            {days.map((day) => {
+              const sameMonth = day.getMonth() === view.getMonth();
+              const isSelected =
+                selected && day.toDateString() === selected.toDateString();
+              const isToday = day.toDateString() === new Date().toDateString();
+              const disabled = Boolean(
+                minimumDay &&
+                new Date(
+                  day.getFullYear(),
+                  day.getMonth(),
+                  day.getDate() + 1,
+                ) <=
+                  new Date(
+                    minimumDay.getFullYear(),
+                    minimumDay.getMonth(),
+                    minimumDay.getDate(),
+                  ),
+              );
+              return (
+                <button
+                  type="button"
+                  key={day.toISOString()}
+                  disabled={disabled}
+                  className={`${sameMonth ? "" : "outside"} ${isSelected ? "selected" : ""} ${isToday ? "today" : ""}`}
+                  onClick={() => choose(day)}
+                >
+                  {day.getDate()}
+                </button>
+              );
+            })}
+          </div>
+          <div className="calendar-time">
+            <span>Horário</span>
+            <select
+              aria-label="Hora"
+              value={selected?.getHours() ?? 9}
+              onChange={(event) => setTime("hour", Number(event.target.value))}
+            >
+              {Array.from({ length: 24 }, (_, hour) => (
+                <option key={hour} value={hour}>
+                  {String(hour).padStart(2, "0")}
+                </option>
+              ))}
+            </select>
+            <b>:</b>
+            <select
+              aria-label="Minuto"
+              value={selected?.getMinutes() ?? 0}
+              onChange={(event) =>
+                setTime("minute", Number(event.target.value))
+              }
+            >
+              {[0, 15, 30, 45].map((minute) => (
+                <option key={minute} value={minute}>
+                  {String(minute).padStart(2, "0")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="calendar-footer">
+            <button
+              type="button"
+              className="calendar-clear"
+              onClick={() => onChange("")}
+            >
+              Limpar
+            </button>
+            <button
+              type="button"
+              className="calendar-done"
+              onClick={() => setOpen(false)}
+            >
+              Concluir
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 export function Admin() {
   const [data, setData] = useState<Data | null>(null),
     [query, setQuery] = useState(""),
@@ -137,9 +330,69 @@ export function Admin() {
           ))}
         </div>
       </section>
+      <section className="panel admin-team-panel">
+        <div className="panel-heading">
+          <div>
+            <span className="eyebrow">EQUIPE PRINCIPAL</span>
+            <h2>Administradores da plataforma</h2>
+            <p>
+              Contas com acesso total à operação e às configurações do BizPeek.
+            </p>
+          </div>
+          <span className="chip">
+            {data?.users.filter((user) => user.role === "ADMIN").length || 0}{" "}
+            administradores
+          </span>
+        </div>
+        <div className="admin-team-grid">
+          {data?.users
+            .filter((user) => user.role === "ADMIN")
+            .map((admin) => (
+              <article className="admin-team-card" key={admin.id}>
+                <Avatar user={admin} size={46} />
+                <div>
+                  <strong>{admin.name}</strong>
+                  <small>{admin.email}</small>
+                  <span>
+                    {admin.id === data.currentUserId
+                      ? "Você · administrador principal"
+                      : "Administrador"}
+                  </span>
+                </div>
+                {admin.id !== data.currentUserId && (
+                  <button
+                    className="secondary"
+                    onClick={async () => {
+                      if (!confirm(`Remover ${admin.name} da administração?`))
+                        return;
+                      try {
+                        await updateUser({
+                          action: "role",
+                          id: admin.id,
+                          role: "USER",
+                        });
+                      } catch (error) {
+                        setMessage(
+                          error instanceof Error
+                            ? error.message
+                            : "Não foi possível alterar o administrador.",
+                        );
+                      }
+                    }}
+                  >
+                    Remover admin
+                  </button>
+                )}
+              </article>
+            ))}
+        </div>
+      </section>
       <section className="panel">
         <div className="toolbar">
-          <h2 style={{ fontSize: 15, margin: 0 }}>Contas da plataforma</h2>
+          <div>
+            <span className="eyebrow">CLIENTES E USUÁRIOS</span>
+            <h2 style={{ fontSize: 15, margin: 3 }}>Contas da plataforma</h2>
+          </div>
           <input
             aria-label="Buscar usuários"
             value={query}
@@ -161,6 +414,7 @@ export function Admin() {
             </thead>
             <tbody>
               {data?.users
+                .filter((u) => u.role !== "ADMIN")
                 .filter((u) =>
                   `${u.name} ${u.email}`
                     .toLowerCase()
@@ -196,38 +450,33 @@ export function Admin() {
                     </td>
                     <td>
                       <div className="admin-actions">
-                        {u.id !== data.currentUserId && (
-                          <button
-                            className="secondary"
-                            onClick={async () => {
-                              const role =
-                                u.role === "ADMIN" ? "USER" : "ADMIN";
-                              if (
-                                !confirm(
-                                  `${role === "ADMIN" ? "Tornar" : "Remover"} ${u.name} ${role === "ADMIN" ? "administrador" : "da administração"}?`,
-                                )
+                        <button
+                          className="secondary"
+                          onClick={async () => {
+                            const role = "ADMIN";
+                            if (
+                              !confirm(
+                                `${role === "ADMIN" ? "Tornar" : "Remover"} ${u.name} ${role === "ADMIN" ? "administrador" : "da administração"}?`,
                               )
-                                return;
-                              try {
-                                await updateUser({
-                                  action: "role",
-                                  id: u.id,
-                                  role,
-                                });
-                              } catch (error) {
-                                setMessage(
-                                  error instanceof Error
-                                    ? error.message
-                                    : "Não foi possível alterar o administrador.",
-                                );
-                              }
-                            }}
-                          >
-                            {u.role === "ADMIN"
-                              ? "Remover admin"
-                              : "Tornar admin"}
-                          </button>
-                        )}
+                            )
+                              return;
+                            try {
+                              await updateUser({
+                                action: "role",
+                                id: u.id,
+                                role,
+                              });
+                            } catch (error) {
+                              setMessage(
+                                error instanceof Error
+                                  ? error.message
+                                  : "Não foi possível alterar o administrador.",
+                              );
+                            }
+                          }}
+                        >
+                          Tornar admin
+                        </button>
                         {u.role !== "ADMIN" && (
                           <button
                             className="secondary"
@@ -305,23 +554,17 @@ export function Admin() {
               </button>
             </div>
             <div className="admin-trial-grid">
-              <label>
-                Início
-                <input
-                  type="datetime-local"
-                  value={trialStartsAt}
-                  onChange={(e) => setTrialStartsAt(e.target.value)}
-                />
-              </label>
-              <label>
-                Final
-                <input
-                  type="datetime-local"
-                  value={trialEndsAt}
-                  min={trialStartsAt}
-                  onChange={(e) => setTrialEndsAt(e.target.value)}
-                />
-              </label>
+              <DateTimePicker
+                label="Início do acesso"
+                value={trialStartsAt}
+                onChange={setTrialStartsAt}
+              />
+              <DateTimePicker
+                label="Final do acesso"
+                value={trialEndsAt}
+                onChange={setTrialEndsAt}
+                minimum={trialStartsAt}
+              />
             </div>
             <p className="hint">
               O acesso é liberado somente entre essas duas datas. A assinatura
