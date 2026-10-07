@@ -74,6 +74,7 @@ A receita exibida no admin é estimativa: assinaturas ativas × R$ 50, antes de 
 ## Colocar em produção
 
 - Use PostgreSQL persistente com backup e uma URL adequada ao provedor. O Docker incluso é para desenvolvimento local.
+- No Neon, configure `DATABASE_URL` com o endereço com pooler (host com `-pooler`) e `DIRECT_URL` com o endereço direto, usado pelas migrations. No ambiente local, as duas apontam para o mesmo banco do Docker.
 - Defina BETTER_AUTH_URL com seu domínio HTTPS e gere um novo BETTER_AUTH_SECRET.
 - Configure as integrações e use `BILLING_ENABLED=true` e `REQUIRE_EMAIL_VERIFICATION=true`.
 - Execute `npm ci`, `npm run db:deploy` e `npm run build`; inicie com `npm start`.
