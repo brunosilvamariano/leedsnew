@@ -336,26 +336,6 @@ export function LeadWorkspace({ pipeline = false }: { pipeline?: boolean }) {
           close={close}
         >
           <form className="form-stack" onSubmit={submit}>
-            {edit !== "new" && edit.data.aiAnalysis && (
-              <section className="lead-ai-analysis" aria-label="Análise da inteligência artificial">
-                <header>
-                  <span>✦</span>
-                  <div>
-                    <small>IA LOCAL · {edit.data.aiAnalysis.model}</small>
-                    <h3>Análise comercial</h3>
-                  </div>
-                  <time dateTime={edit.data.aiAnalysis.completedAt}>
-                    {new Date(edit.data.aiAnalysis.completedAt).toLocaleDateString("pt-BR")}
-                  </time>
-                </header>
-                <div className="lead-ai-grid">
-                  <article><small>RESUMO</small><p>{edit.data.aiAnalysis.summary}</p></article>
-                  <article><small>OPORTUNIDADE</small><p>{edit.data.aiAnalysis.opportunity}</p></article>
-                  <article><small>ABORDAGEM SUGERIDA</small><p>{edit.data.aiAnalysis.approach}</p></article>
-                  <article><small>PRÓXIMO PASSO</small><p>{edit.data.aiAnalysis.nextStep}</p></article>
-                </div>
-              </section>
-            )}
             <label>
               Empresa ou contato
               <input
